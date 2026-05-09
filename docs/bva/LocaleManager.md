@@ -15,51 +15,51 @@ Boundary inputs:
 
 ## Method under test: `LocaleManager(Path bundleDir)` (package-private; production singleton uses the same constructor with a discovered classpath dir)
 
-- **TC1: Single locale bundle present** ( :x: )
+- **TC1: Single locale bundle present** ( :white_check_mark: )
     - **State**: `bundleDir` contains only `messages_en.properties`.
     - **Expected output**: `getAvailableLocales()` returns `[en]`;
       `getActiveLocale()` returns `en` (default = first available).
 
-- **TC2: Two locale bundles present, deterministic ordering** ( :x: )
+- **TC2: Two locale bundles present, deterministic ordering** ( :white_check_mark: )
     - **State**: `bundleDir` contains `messages_en.properties` and
       `messages_es.properties`.
     - **Expected output**: `getAvailableLocales()` returns `[en, es]`
       (sorted by language tag); `getActiveLocale()` returns `en`.
 
-- **TC3: Empty bundle directory rejected** ( :x: )
+- **TC3: Empty bundle directory rejected** ( :white_check_mark: )
     - **State**: `bundleDir` exists but contains no `messages_*.properties`.
     - **Expected output**: throws `IllegalStateException` (rubric: fail-fast
       with a clear message directing the developer to add a bundle).
 
-- **TC4: Files that don't match the pattern are ignored** ( :x: )
+- **TC4: Files that don't match the pattern are ignored** ( :white_check_mark: )
     - **State**: `bundleDir` contains `messages_en.properties`,
       `README.md`, and `messages.txt`.
     - **Expected output**: `getAvailableLocales()` returns `[en]`.
 
-- **TC5: Null bundle directory rejected** ( :x: )
+- **TC5: Null bundle directory rejected** ( :white_check_mark: )
     - **State**: `bundleDir = null`.
     - **Expected output**: throws `IllegalArgumentException`.
 
 ## Method under test: `getAvailableLocales()`
-- **TC6: Returned list is unmodifiable** ( :x: )
+- **TC6: Returned list is unmodifiable** ( :white_check_mark: )
     - **State**: any non-empty manager.
     - **Expected output**: attempting to mutate the returned list throws
       `UnsupportedOperationException`.
 
 ## Method under test: `setActiveLocale(Locale locale)`
 
-- **TC7: Switches active locale to a discovered locale** ( :x: )
+- **TC7: Switches active locale to a discovered locale** ( :white_check_mark: )
     - **State**: manager with `[en, es]`, currently active `en`.
     - **Action**: `setActiveLocale(new Locale("es"))`.
     - **Expected output**: `getActiveLocale()` returns `es`; subsequent
       `get(key)` resolves from the `es` bundle.
 
-- **TC8: Null locale rejected** ( :x: )
+- **TC8: Null locale rejected** ( :white_check_mark: )
     - **State**: any manager.
     - **Expected output**: `setActiveLocale(null)` throws
       `IllegalArgumentException`; active locale is unchanged.
 
-- **TC9: Locale not in available set rejected** ( :x: )
+- **TC9: Locale not in available set rejected** ( :white_check_mark: )
     - **State**: manager with `[en]`.
     - **Action**: `setActiveLocale(new Locale("fr"))`.
     - **Expected output**: throws `IllegalArgumentException`; active locale
@@ -71,28 +71,28 @@ Boundary inputs:
 
 ## Method under test: `get(String key)`
 
-- **TC12: Returns the value from the active bundle** ( :x: )
+- **TC12: Returns the value from the active bundle** ( :white_check_mark: )
     - **State**: manager with `en` bundle containing `app.title=CATAN`,
       active locale `en`.
     - **Expected output**: `get("app.title")` returns `"CATAN"`.
 
-- **TC13: Returns localized value after switching locale** ( :x: )
+- **TC13: Returns localized value after switching locale** ( implemented in TC7 )
     - **State**: manager with `en` (`setup.start=Start Game`) and `es`
       (`setup.start=Empezar partida`); active locale just switched to `es`.
     - **Expected output**: `get("setup.start")` returns `"Empezar partida"`.
 
-- **TC14: Null key rejected** ( :x: )
+- **TC14: Null key rejected** ( :white_check_mark: )
     - **State**: any manager.
     - **Expected output**: throws `IllegalArgumentException`.
 
-- **TC15: Missing key throws MissingResourceException** ( :x: )
+- **TC15: Missing key throws MissingResourceException** ( :white_check_mark: )
     - **State**: manager whose active bundle has no entry for `nope.key`.
     - **Expected output**: `get("nope.key")` throws
       `MissingResourceException`.
 
 ## Method under test: `get(String key, Object... args)`
 
-- **TC16: Substitutes positional arguments via MessageFormat** ( :x: )
+- **TC16: Substitutes positional arguments via MessageFormat** ( :white_check_mark: )
     - **State**: active bundle has `setup.player.name.prompt=Player {0} name:`.
     - **Expected output**: `get("setup.player.name.prompt", 1)` returns
       `"Player 1 name:"`.
