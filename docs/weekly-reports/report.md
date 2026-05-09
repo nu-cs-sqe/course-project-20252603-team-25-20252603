@@ -14,14 +14,15 @@ documented BVA on every public method. Java Swing chosen for the GUI.
   is deferred to a later week.
 
 **Planning and Progress Tracking**:
-1. [in progress] All: User Story + Use Cases for Game Setup (`docs/requirements/`) — PR TBD
-2. [in progress] All: Design doc with classes, methods, and i18n architecture (`docs/design/`) — PR TBD
-3. [not started] Daniel Kim: `LocaleManager` + `messages_en.properties` + `messages_es.properties` (BVA + TDD) — PR TBD
-4. [not started] Daniel Wu: `Player` + `PlayerColor` (BVA + TDD) — PR TBD
-5. [not started] Julian Tang: `Board` (hex generation, terrains, number tokens) (BVA + TDD) — PR TBD
-6. [not started] Shun Fujita: `GameSetup` orchestrator + `TurnOrder` + `DevelopmentCardDeck` (BVA + TDD) — PR TBD
-7. [not started] All: Integration tests on **Game Setup** and **Locale Selection** features (rubric: ≥2 main features) — PR TBD
-8. [not started] All: Code review + merges to `main`
+1. [done] All: User Story + Use Cases for Game Setup (`docs/requirements/`) — merged PR #3
+2. [done] All: Design doc with classes, methods, and i18n architecture (`docs/design/`) — merged PR #3
+3. [done] Daniel Kim: `Player` + `PlayerColor` (BVA + TDD) — merged PR #4
+4. [done] All: Checkstyle + SpotBugs setup (W3 Item 3) — merged PR #5
+5. [not started] Daniel Wu: `LocaleManager` + `messages_en.properties` + `messages_es.properties` + minimal Swing locale picker (BVA + TDD) — PR TBD
+6. [not started] Julian Tang: `Board` (hex generation, terrains, number tokens) including `TerrainType`, `NumberToken`, `Hex` (BVA + TDD) — PR TBD
+7. [not started] Shun Fujita: `GameSetup` orchestrator + `TurnOrder` + `DevelopmentCardDeck` + `Game` + `PlayerRegistration` (BVA + TDD) — depends on Board — PR TBD
+8. [not started] All: Integration tests on **Game Setup** and **Locale Selection** features (rubric: ≥2 main features) — PR TBD
+9. [ongoing] All: Code review + merges to `main`
 
 **Risks / Notes**:
 - Keep methods small and named per Clean Code (rubric: code standards).
