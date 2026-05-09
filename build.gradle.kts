@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("application")
     id("checkstyle")
     id("com.github.spotbugs") version "6.0.26"
 }
@@ -20,6 +21,10 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(11)
     }
+}
+
+application {
+    mainClass.set("ui.Main")
 }
 
 tasks.compileJava {
