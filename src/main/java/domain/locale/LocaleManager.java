@@ -77,10 +77,10 @@ public final class LocaleManager {
     }
 
     /**
-     * Test-only hook: forget the cached singleton so the next
-     * {@link #getInstance()} call re-discovers bundles.
+     * Test hook: forget the cached singleton so the next
+     * {@link #getInstance()} call re-discovers bundles. Not for production use.
      */
-    static void resetForTesting() {
+    public static void resetForTesting() {
         synchronized (LocaleManager.class) {
             instance = null;
         }
