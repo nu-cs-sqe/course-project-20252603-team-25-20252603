@@ -12,5 +12,11 @@
 - JUnit 5.10
 - Gradle 8.10
 
+## Local Git hooks (optional)
+To keep commit messages free of automatic `Co-authored-by: Cursor ...` trailers
+from the IDE, run once per clone:
+
+`git config core.hooksPath .githooks`
+
 ## Acknowledgements
 REFERENCES, SOURCE OF HELP ETC
