@@ -1,18 +1,17 @@
 package domain.locale;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class LocaleManagerTest {
 
@@ -20,7 +19,8 @@ class LocaleManagerTest {
     private static final Locale ES = new Locale("es");
     private static final Locale FR = new Locale("fr");
 
-    private static void writeBundle(Path dir, String tag, String... keyValuePairs) throws IOException {
+    private static void writeBundle(Path dir, String tag, String... keyValuePairs)
+            throws IOException {
         StringBuilder body = new StringBuilder();
         for (int i = 0; i < keyValuePairs.length; i += 2) {
             body.append(keyValuePairs[i]).append('=').append(keyValuePairs[i + 1]).append('\n');
