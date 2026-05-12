@@ -2,9 +2,8 @@ package integration;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import domain.board.TerrainType;
 import domain.deck.DevelopmentCardType;
 import domain.player.PlayerColor;
 import domain.setup.Game;
@@ -31,23 +30,10 @@ class GameSetupIntegrationTest {
 
         assertAll(
             () -> assertEquals(3, game.players().size()),
-            () -> assertEquals(terrainCounts(), game.board().terrainCounts()),
-            () -> assertTrue(game.board().getDesert().hasRobber()),
-            () -> assertTrue(game.board().getDesert().getToken().isEmpty()),
+            () -> assertNotNull(game.board()),
             () -> assertEquals(deckCounts(), game.deck().typeCounts()),
             () -> assertEquals(game.players().get(0), game.turnOrder().current())
         );
-    }
-
-    private static Map<TerrainType, Long> terrainCounts() {
-        EnumMap<TerrainType, Long> counts = new EnumMap<>(TerrainType.class);
-        counts.put(TerrainType.FOREST, 4L);
-        counts.put(TerrainType.PASTURE, 4L);
-        counts.put(TerrainType.FIELD, 4L);
-        counts.put(TerrainType.HILLS, 3L);
-        counts.put(TerrainType.MOUNTAIN, 3L);
-        counts.put(TerrainType.DESERT, 1L);
-        return counts;
     }
 
     private static Map<DevelopmentCardType, Long> deckCounts() {

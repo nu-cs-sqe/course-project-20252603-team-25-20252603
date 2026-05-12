@@ -56,7 +56,7 @@ before and after registration.
 
 - **TC4: Build creates complete game after three-player registration** ( :white_check_mark: )
     - **State of the system**: 3 valid registrations.
-    - **Expected output**: `Game` has 3 players, 19 board hexes, 25 development cards, and turn order starts at player 0.
+    - **Expected output**: `Game` has 3 players, a board object, 25 development cards, and turn order starts at player 0.
 
 - **TC5: Build creates complete game after four-player registration** ( :white_check_mark: )
     - **State of the system**: 4 valid registrations.
@@ -70,6 +70,6 @@ before and after registration.
     - **State of the system**: game built from 3 valid registrations.
     - **Expected output**: adding to `game.players()` throws `UnsupportedOperationException`.
 
-- **TC14: Build creates standard deck and board** ( :white_check_mark: )
+- **TC14: Build creates deck and board dependency** ( :white_check_mark: )
     - **State of the system**: game built from 3 valid registrations.
-    - **Expected output**: board has a desert and deck counts are `{KNIGHT=14, VICTORY_POINT=5, ROAD_BUILDING=2, MONOPOLY=2, YEAR_OF_PLENTY=2}`.
+    - **Expected output**: board is present and deck counts are `{KNIGHT=14, VICTORY_POINT=5, ROAD_BUILDING=2, MONOPOLY=2, YEAR_OF_PLENTY=2}`.

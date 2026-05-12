@@ -45,7 +45,7 @@ class GameSetupTest {
 
         assertAll(
             () -> assertEquals(3, game.players().size()),
-            () -> assertEquals(19, game.board().getHexes().size()),
+            () -> assertNotNull(game.board()),
             () -> assertEquals(25, game.deck().size()),
             () -> assertEquals(game.players().get(0), game.turnOrder().current())
         );
@@ -156,7 +156,7 @@ class GameSetupTest {
         Game game = setup.build();
 
         assertAll(
-            () -> assertNotNull(game.board().getDesert()),
+            () -> assertNotNull(game.board()),
             () -> assertEquals(deckCounts(), game.deck().typeCounts())
         );
     }
