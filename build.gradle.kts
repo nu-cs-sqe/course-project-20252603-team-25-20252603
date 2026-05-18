@@ -3,6 +3,8 @@ plugins {
     id("application")
     id("checkstyle")
     id("com.github.spotbugs") version "6.0.26"
+    jacoco
+    id("info.solidsoft.pitest") version "1.15.0"
 }
 
 group = "nu.csse.sqe"
@@ -55,4 +57,39 @@ tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
         required.set(true)
         outputLocation.set(layout.buildDirectory.file("reports/spotbugs/${name}.html"))
     }
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(false)
+        csv.required.set(false)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco"))
+    }
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+    finalizedBy(tasks.pitest)
+}
+
+tasks.build {
+    dependsOn("pitest")
+}
+
+pitest {
+    targetClasses.set(setOf("domain.*", "ui.*"))
+    targetTests.set(setOf("domain.*", "integration.*"))
+    junit5PluginVersion.set("1.2.1")
+    pitestVersion.set("1.15.0")
+
+    threads.set(4)
+    outputFormats.set(setOf("HTML"))
+    timestampedReports.set(false)
+    testSourceSets.set(listOf(sourceSets.test.get()))
+    mainSourceSets.set(listOf(sourceSets.main.get()))
+    jvmArgs.set(listOf("-Xmx1024m"))
+    useClasspathFile.set(true)
+    fileExtensionsToFilter.addAll("xml")
+    exportLineCoverage.set(true)
 }
