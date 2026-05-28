@@ -6,7 +6,7 @@ after PR #20 unless noted.
 | # | Owner | Task | Status |
 |---|--------|------|--------|
 | A | **Daniel Wu** | `PlayerSetupFrame` + wire `Main` (locale → player setup → `GameSetup.build()`) + Swing CJK font helper | done — merged PR #21 |
-| B | **Daniel Wu** *(reassigned from Daniel Kim)* | Extend `LocaleClasspathIntegrationTest` for `zh`; negative-path locale cases; `@Tag("integration")` | PR TBD — closes #17 |
+| B | **Daniel Wu** *(reassigned from Daniel Kim)* | Extend `LocaleClasspathIntegrationTest` for `zh`; negative-path locale cases; `@Tag("integration")` | PR #26 — closes #17 |
 | C | **Julian Tang** | `@Tag("integration")` on integration tests + Gradle task/filter; `BoardFrame` stub | not started |
 | D | **Shun Fujita** | Expand `GameSetupIntegrationTest` (invalid count, duplicate name/color) | not started |
 | E | **All** | Review instructor feedback PR #19; keep `report.md` PR links current | ongoing |
