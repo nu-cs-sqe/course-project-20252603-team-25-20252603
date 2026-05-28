@@ -1,3 +1,18 @@
+# Carry-over assignments (Game Setup — unowned work split, May 2026)
+
+Tasks below were previously unassigned or marked **All**. Status reflects `main`
+after PR #20 unless noted.
+
+| # | Owner | Task | Status |
+|---|--------|------|--------|
+| A | **Daniel Wu** | `PlayerSetupFrame` + wire `Main` (locale → player setup → `GameSetup.build()`) + Swing CJK font helper | PR TBD |
+| B | **Daniel Kim** | Extend `LocaleClasspathIntegrationTest` for `zh`; add negative-path locale cases | not started |
+| C | **Julian Tang** | `@Tag("integration")` on integration tests + Gradle task/filter; `BoardFrame` stub | not started |
+| D | **Shun Fujita** | Expand `GameSetupIntegrationTest` (invalid count, duplicate name/color) | not started |
+| E | **All** | Review instructor feedback PR #19; keep `report.md` PR links current | ongoing |
+
+---
+
 # Week 7 (05/11/2026-05/17/2026)
 
 **Theme**: Land the rest of the Game Setup domain (Board, Deck, Turn Order,
@@ -44,7 +59,7 @@ the i18n architecture proves it can take a new language with no code changes.
 8. [done] Daniel Wu: `messages_zh.properties` added under
    `src/main/resources/` with translations for all 10 existing keys. Diff contains
    no Java changes so we can point at it as proof the locale architecture is open
-   for extension. PR TBD.
+   for extension. Merged PR #20.
 9. [ongoing] All: Code review and merges to `main`.
 
 **Risks / Notes**:

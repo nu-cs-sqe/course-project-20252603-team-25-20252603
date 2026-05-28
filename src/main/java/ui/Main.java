@@ -1,14 +1,15 @@
 package ui;
 
 import domain.locale.LocaleManager;
+import domain.setup.Game;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import ui.swing.LocaleSelectionFrame;
+import ui.swing.PlayerSetupFrame;
 
 /**
- * Application entry point. Shows the locale picker first; once the user
- * chooses, the selected locale becomes active for all subsequent UI text.
- * Subsequent setup screens (player count, names, board) will be wired in
- * later iterations.
+ * Application entry point: locale selection, then player setup, then a ready
+ * message when {@link domain.setup.GameSetup} finishes.
  */
 public final class Main {
 
@@ -26,13 +27,30 @@ public final class Main {
 
     private static void launch() {
         LocaleManager manager = LocaleManager.getInstance();
-        LocaleSelectionFrame dialog = new LocaleSelectionFrame(
+        LocaleSelectionFrame localeDialog = new LocaleSelectionFrame(
             null,
             manager,
             locale -> {
                 manager.setActiveLocale(locale);
-                System.out.println(manager.get("app.title"));
+                showPlayerSetup(manager);
             });
-        dialog.setVisible(true);
+        localeDialog.setVisible(true);
+    }
+
+    private static void showPlayerSetup(LocaleManager manager) {
+        PlayerSetupFrame setupDialog = new PlayerSetupFrame(
+            null,
+            manager,
+            game -> showGameReady(manager, game));
+        setupDialog.setVisible(true);
+    }
+
+    private static void showGameReady(LocaleManager manager, Game game) {
+        String starter = game.turnOrder().current().getName();
+        JOptionPane.showMessageDialog(
+            null,
+            manager.get("setup.ready", starter),
+            manager.get("app.title"),
+            JOptionPane.INFORMATION_MESSAGE);
     }
 }
