@@ -8,9 +8,15 @@ import domain.turn.TurnOrder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * Orchestrates the Game Setup phase: validate registrations, build the
+ * board and deck with the injected {@link Random}, and finalize the
+ * initial {@link TurnOrder} into a ready-to-play {@link Game}.
+ */
 public final class GameSetup {
 
     private static final int MINIMUM_PLAYERS = 3;
@@ -19,14 +25,24 @@ public final class GameSetup {
     private final Random rng;
     private List<Player> players;
 
+    /**
+     * Creates an orchestrator that uses {@code rng} for board and deck shuffling.
+     *
+     * @param rng non-null source of randomness (seed in tests for determinism)
+     * @throws NullPointerException if {@code rng} is null
+     */
     public GameSetup(Random rng) {
-        if (rng == null) {
-            throw new IllegalArgumentException("rng must not be null");
-        }
-        this.rng = rng;
+        this.rng = Objects.requireNonNull(rng, "rng must not be null");
         this.players = new ArrayList<>();
     }
 
+    /**
+     * Validates the supplied registrations (3 or 4 players, unique names and
+     * colors, no nulls) and converts them into {@link Player} instances.
+     *
+     * @param registrations user-facing player choices
+     * @throws IllegalArgumentException if any validation rule is violated
+     */
     public void registerPlayers(List<PlayerRegistration> registrations) {
         validateRegistrations(registrations);
         List<Player> registeredPlayers = new ArrayList<>();
@@ -36,6 +52,12 @@ public final class GameSetup {
         this.players = registeredPlayers;
     }
 
+    /**
+     * Builds the immutable {@link Game} from the registered players.
+     *
+     * @throws IllegalStateException if {@link #registerPlayers} has not yet
+     *                               produced enough players
+     */
     public Game build() {
         if (players.size() < MINIMUM_PLAYERS) {
             throw new IllegalStateException("register 3 or 4 players before build");
@@ -47,10 +69,9 @@ public final class GameSetup {
     }
 
     private static void validateRegistrations(List<PlayerRegistration> registrations) {
-        if (registrations == null) {
-            throw new IllegalArgumentException("registrations must not be null");
-        }
-        if (registrations.size() < MINIMUM_PLAYERS || registrations.size() > MAXIMUM_PLAYERS) {
+        if (registrations == null
+                || registrations.size() < MINIMUM_PLAYERS
+                || registrations.size() > MAXIMUM_PLAYERS) {
             throw new IllegalArgumentException("player count must be 3 or 4");
         }
         rejectNullRegistrations(registrations);

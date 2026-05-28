@@ -42,7 +42,7 @@ class HexTest {
 
     @Test
     void tc5_nullTerrainRejected() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> new Hex(5, null, new NumberToken(5)));
     }
 

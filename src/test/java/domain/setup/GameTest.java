@@ -36,7 +36,7 @@ class GameTest {
 
     @Test
     void tc2_nullPlayersRejected() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> new Game(null, board(), deck(), turnOrder()));
     }
 
@@ -60,11 +60,11 @@ class GameTest {
         List<Player> players = players();
 
         assertAll(
-            () -> assertThrows(IllegalArgumentException.class,
+            () -> assertThrows(NullPointerException.class,
                 () -> new Game(players, null, deck(), turnOrder())),
-            () -> assertThrows(IllegalArgumentException.class,
+            () -> assertThrows(NullPointerException.class,
                 () -> new Game(players, board(), null, turnOrder())),
-            () -> assertThrows(IllegalArgumentException.class,
+            () -> assertThrows(NullPointerException.class,
                 () -> new Game(players, board(), deck(), null))
         );
     }

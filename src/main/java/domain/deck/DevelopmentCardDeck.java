@@ -6,8 +6,15 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Random;
 
+/**
+ * Shuffled draw pile of standard CATAN development cards: 14 Knight, 5
+ * Victory Point, and 2 each of Road Building, Monopoly, and Year of Plenty.
+ * Built by {@link #standardShuffled(Random)}; tests inject a seeded
+ * {@link Random} for determinism.
+ */
 public final class DevelopmentCardDeck {
 
     private static final int KNIGHT_COUNT = 14;
@@ -20,10 +27,15 @@ public final class DevelopmentCardDeck {
         this.cards = new ArrayList<>(cards);
     }
 
+    /**
+     * Builds a standard 25-card deck and shuffles it with {@code rng}.
+     *
+     * @param rng non-null source of randomness
+     * @return a freshly shuffled standard deck
+     * @throws NullPointerException if {@code rng} is null
+     */
     public static DevelopmentCardDeck standardShuffled(Random rng) {
-        if (rng == null) {
-            throw new IllegalArgumentException("rng must not be null");
-        }
+        Objects.requireNonNull(rng, "rng must not be null");
         List<DevelopmentCard> cards = standardCards();
         Collections.shuffle(cards, rng);
         return new DevelopmentCardDeck(cards);
@@ -33,6 +45,11 @@ public final class DevelopmentCardDeck {
         return cards.size();
     }
 
+    /**
+     * Removes and returns the top card.
+     *
+     * @throws NoSuchElementException if the deck is empty
+     */
     public DevelopmentCard draw() {
         if (cards.isEmpty()) {
             throw new NoSuchElementException("deck is empty");
@@ -40,6 +57,12 @@ public final class DevelopmentCardDeck {
         return cards.remove(0);
     }
 
+    /**
+     * Counts how many of each card type remain in the deck.
+     *
+     * @return unmodifiable map giving the remaining count of each
+     *         {@link DevelopmentCardType} in the deck
+     */
     public Map<DevelopmentCardType, Long> typeCounts() {
         EnumMap<DevelopmentCardType, Long> counts =
             new EnumMap<>(DevelopmentCardType.class);

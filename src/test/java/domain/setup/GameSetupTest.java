@@ -18,7 +18,7 @@ class GameSetupTest {
 
     @Test
     void tc1_nullRandomRejected() {
-        assertThrows(IllegalArgumentException.class, () -> new GameSetup(null));
+        assertThrows(NullPointerException.class, () -> new GameSetup(null));
     }
 
     @Test

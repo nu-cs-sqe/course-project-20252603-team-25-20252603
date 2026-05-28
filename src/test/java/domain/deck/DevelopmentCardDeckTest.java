@@ -31,7 +31,7 @@ class DevelopmentCardDeckTest {
 
     @Test
     void tc3_nullRandomRejected() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> DevelopmentCardDeck.standardShuffled(null));
     }
 
