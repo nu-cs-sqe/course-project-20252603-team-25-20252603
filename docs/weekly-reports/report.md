@@ -41,10 +41,10 @@ the i18n architecture proves it can take a new language with no code changes.
 7. [not started] All: Integration tests for Game Setup and Locale Selection
    actually implemented in `src/test/java/integration/`, tagged
    `@Tag("integration")`. PR TBD.
-8. [not started] Daniel Wu: `messages_zh.properties` added under
-   `src/main/resources/` with translations for all 10 existing keys. Diff should
-   contain no Java changes so we can point at it as proof the locale
-   architecture is open for extension. PR TBD.
+8. [done] Daniel Wu: `messages_zh.properties` added under
+   `src/main/resources/` with translations for all 10 existing keys. Diff contains
+   no Java changes so we can point at it as proof the locale architecture is open
+   for extension. PR TBD.
 9. [ongoing] All: Code review and merges to `main`.
 
 **Risks / Notes**:
