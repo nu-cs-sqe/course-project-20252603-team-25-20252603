@@ -49,6 +49,7 @@ public final class LocaleSelectionFrame extends JDialog {
             });
             add(button);
         }
+        SwingLocaleSupport.applyLocaleFont(this);
         pack();
         setLocationRelativeTo(owner);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
