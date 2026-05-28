@@ -20,7 +20,7 @@ class DevelopmentCardTest {
 
     @Test
     void tc2_nullTypeRejected() {
-        assertThrows(IllegalArgumentException.class, () -> new DevelopmentCard(null));
+        assertThrows(NullPointerException.class, () -> new DevelopmentCard(null));
     }
 
     @Test

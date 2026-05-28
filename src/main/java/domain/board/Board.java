@@ -6,8 +6,14 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
+/**
+ * The 19-hex randomized CATAN board. Built with {@link #generateRandom(Random)}
+ * so tests can inject a seeded {@link Random}; the resulting board honors the
+ * standard terrain mix and starts the robber on the desert.
+ */
 public final class Board {
 
     static final int HEX_COUNT = 19;
@@ -24,10 +30,16 @@ public final class Board {
         this.desert = desert;
     }
 
+    /**
+     * Builds a fresh board by shuffling terrains and tokens with the supplied
+     * {@link Random}. The desert receives no token and starts with the robber.
+     *
+     * @param rng non-null source of randomness (seed in tests for determinism)
+     * @return a new immutable board
+     * @throws NullPointerException if {@code rng} is null
+     */
     public static Board generateRandom(Random rng) {
-        if (rng == null) {
-            throw new IllegalArgumentException("rng must not be null");
-        }
+        Objects.requireNonNull(rng, "rng must not be null");
         List<TerrainType> terrains = new ArrayList<>(STANDARD_TERRAINS);
         Collections.shuffle(terrains, rng);
         List<Integer> tokens = new ArrayList<>(STANDARD_TOKEN_VALUES);
@@ -60,6 +72,12 @@ public final class Board {
         return desert;
     }
 
+    /**
+     * Counts how many hexes carry each terrain.
+     *
+     * @return unmodifiable map from each {@link TerrainType} to the number of
+     *         hexes of that terrain on this board
+     */
     public Map<TerrainType, Long> terrainCounts() {
         EnumMap<TerrainType, Long> counts = new EnumMap<>(TerrainType.class);
         for (Hex hex : hexes) {

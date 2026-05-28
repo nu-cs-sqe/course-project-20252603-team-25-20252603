@@ -71,7 +71,7 @@ class LocaleManagerTest {
 
     @Test
     void tc5_nullBundleDirectoryRejected() {
-        assertThrows(IllegalArgumentException.class, () -> new LocaleManager(null));
+        assertThrows(NullPointerException.class, () -> new LocaleManager(null));
     }
 
     @Test
@@ -103,7 +103,7 @@ class LocaleManagerTest {
         writeBundle(dir, "en", "app.title", "CATAN");
         LocaleManager mgr = new LocaleManager(dir);
 
-        assertThrows(IllegalArgumentException.class, () -> mgr.setActiveLocale(null));
+        assertThrows(NullPointerException.class, () -> mgr.setActiveLocale(null));
         assertEquals(EN, mgr.getActiveLocale());
     }
 
@@ -129,7 +129,7 @@ class LocaleManagerTest {
         writeBundle(dir, "en", "app.title", "CATAN");
         LocaleManager mgr = new LocaleManager(dir);
 
-        assertThrows(IllegalArgumentException.class, () -> mgr.get(null));
+        assertThrows(NullPointerException.class, () -> mgr.get(null));
     }
 
     @Test

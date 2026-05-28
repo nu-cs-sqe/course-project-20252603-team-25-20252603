@@ -2,20 +2,31 @@ package domain.player;
 
 import java.util.Objects;
 
+/**
+ * Immutable value object representing a registered player. Equality is by
+ * trimmed name and color. Constructed by {@link domain.setup.GameSetup} from
+ * validated {@link domain.setup.PlayerRegistration} instances.
+ */
 public final class Player {
 
     private final String name;
     private final PlayerColor color;
 
+    /**
+     * Creates a player with the given name and color.
+     *
+     * @param name  non-blank display name; surrounding whitespace is trimmed
+     * @param color non-null color token
+     * @throws IllegalArgumentException if {@code name} is blank
+     * @throws NullPointerException     if {@code name} or {@code color} is null
+     */
     public Player(String name, PlayerColor color) {
-        if (name == null || name.trim().isEmpty()) {
+        Objects.requireNonNull(name, "name must not be null");
+        if (name.trim().isEmpty()) {
             throw new IllegalArgumentException("name must be non-blank");
         }
-        if (color == null) {
-            throw new IllegalArgumentException("color must not be null");
-        }
         this.name = name.trim();
-        this.color = color;
+        this.color = Objects.requireNonNull(color, "color must not be null");
     }
 
     public String getName() {

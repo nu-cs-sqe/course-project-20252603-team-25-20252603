@@ -105,7 +105,7 @@ class BoardTest {
 
     @Test
     void tc10_nullRandomRejected() {
-        assertThrows(IllegalArgumentException.class, () -> Board.generateRandom(null));
+        assertThrows(NullPointerException.class, () -> Board.generateRandom(null));
     }
 
     @Test

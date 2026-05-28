@@ -28,7 +28,7 @@ class PlayerTest {
 
     @Test
     void tc3_nullNameRejected() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> new Player(null, PlayerColor.RED));
     }
 
@@ -46,7 +46,7 @@ class PlayerTest {
 
     @Test
     void tc6_nullColorRejected() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> new Player("Daniel", null));
     }
 

@@ -5,11 +5,67 @@ after PR #20 unless noted.
 
 | # | Owner | Task | Status |
 |---|--------|------|--------|
-| A | **Daniel Wu** | `PlayerSetupFrame` + wire `Main` (locale → player setup → `GameSetup.build()`) + Swing CJK font helper | PR #21 |
+| A | **Daniel Wu** | `PlayerSetupFrame` + wire `Main` (locale → player setup → `GameSetup.build()`) + Swing CJK font helper | done — merged PR #21 |
 | B | **Daniel Kim** | Extend `LocaleClasspathIntegrationTest` for `zh`; add negative-path locale cases | not started |
 | C | **Julian Tang** | `@Tag("integration")` on integration tests + Gradle task/filter; `BoardFrame` stub | not started |
 | D | **Shun Fujita** | Expand `GameSetupIntegrationTest` (invalid count, duplicate name/color) | not started |
 | E | **All** | Review instructor feedback PR #19; keep `report.md` PR links current | ongoing |
+
+---
+
+# Week 8 (05/18/2026-05/24/2026)
+
+**Theme**: Land the instructor's Week 7 code-review feedback. The instructor
+read every line of production code on `main` (PR #19 from 5/20) and called out
+two things to fix: (1) "your code is full of null checks", and (2) only
+`LocaleManager` had method-level Javadoc, so the rest of the codebase was
+inconsistent. Both are graded under the A-grade rubric for code standards
+(Clean Code Ch. 4 on Comments and Ch. 7 on Error Handling), so we addressed
+them on a dedicated branch before stacking more features on top.
+
+**Decisions made this week**:
+- Replace the team's `if (x == null) throw new IllegalArgumentException(...)`
+  pattern for **pure** null guards with `java.util.Objects.requireNonNull(x, msg)`.
+  That is a one-line, idiomatic-Java replacement that throws
+  `NullPointerException` (the convention modern Java picks for required
+  reference parameters). Trade-off: the affected unit tests had to switch
+  from `assertThrows(IllegalArgumentException.class, ...)` to
+  `assertThrows(NullPointerException.class, ...)` for those exact cases.
+- Keep **composite** validators as `IllegalArgumentException`. The instructor's
+  Clean Code complaint is about scattered standalone null checks, not about
+  domain rule validation. So:
+  - `Player`/`PlayerRegistration` blank-name check stays `IAE`.
+  - `NumberToken` value-range, `Hex` position-range and terrain↔token
+    coupling, `GameSetup.registerPlayers` count/uniqueness/contains-null,
+    `TurnOrder` size/uniqueness/contains-null, `Game` empty/contains-null
+    players — all stay `IAE`. Same for `LocaleManager.setActiveLocale`
+    unknown-locale.
+- Add a single-sentence summary plus a `@param/@return/@throws` block to
+  every public constructor and non-trivial public method, matching the
+  style already in `LocaleManager`. Enums and trivial accessors stay
+  comment-free; Clean Code Ch. 4 still applies (self-documenting names
+  beat redundant comments).
+- Defer one related cleanup (the `PlayerSetupFrame` private `collectRegistrations`
+  helper that returns `null` as a sentinel for "validation failed") to a
+  follow-up branch. It is also a "passing null around" smell but lives
+  inside one private method and is out of scope for this PR.
+
+**Planning and Progress Tracking**:
+1. [done] All: Read and discuss instructor feedback in `docs/weekly-reports/feedback-codereview.md` after merging PR #19.
+2. [done] Daniel Kim: Add class-level + method-level Javadoc to all 17 production classes (`PlayerColor`, `TerrainType`, `DevelopmentCardType`, `Player`, `PlayerRegistration`, `Hex`, `NumberToken`, `Board`, `DevelopmentCard`, `DevelopmentCardDeck`, `Game`, `GameSetup`, `TurnOrder`, `Main`, `LocaleSelectionFrame`, `PlayerSetupFrame`, `SwingLocaleSupport`). `LocaleManager` already had it.
+3. [done] Daniel Kim: Replace 14 pure-null `if-throw IAE` blocks across `Player`, `PlayerRegistration`, `Hex`, `Board`, `DevelopmentCard`, `DevelopmentCardDeck`, `Game`, `GameSetup`, `LocaleManager`, `LocaleSelectionFrame`, and `PlayerSetupFrame` with `Objects.requireNonNull`. Update the corresponding 13 unit tests to assert `NullPointerException`.
+4. [done] Daniel Wu: `PlayerSetupFrame` + wire `Main` (locale → player setup → game ready). Carry-over Task A — merged PR #21.
+5. [in progress] All: Land the Clean Code feedback PR (`chore/clean-code-feedback`) on `main`. Local `./gradlew check` passes (271 unit tests + integration tests, Checkstyle clean, SpotBugs clean, Jacoco run, Pitest 96% test strength).
+6. [ongoing] All: Code review and merges to `main`.
+
+**Risks / Notes**:
+- `NullPointerException` from `Objects.requireNonNull` carries the same
+  diagnostic value as the old `IllegalArgumentException("x must not be null")`
+  because both encode the parameter name in the message. No information loss.
+- Future contributors: if you add a constructor argument that must not be
+  null, use `Objects.requireNonNull(arg, "arg")`. Only fall back to
+  `if-throw IAE` when the check is composite (null *and* a range or shape
+  rule), in which case `IAE` is the right exception.
 
 ---
 
@@ -53,9 +109,10 @@ the i18n architecture proves it can take a new language with no code changes.
    file plus a font fallback in Swing for CJK glyphs.
 6. [done] All: Week 7 progress documented in `docs/weekly-reports/report.md`
    (Item 6, this file).
-7. [not started] All: Integration tests for Game Setup and Locale Selection
-   actually implemented in `src/test/java/integration/`, tagged
-   `@Tag("integration")`. PR TBD.
+7. [done] All: Integration tests for Game Setup and Locale Selection
+   implemented in `src/test/java/integration/`
+   (`GameSetupIntegrationTest.java`, `LocaleClasspathIntegrationTest.java`).
+   Tagging with `@Tag("integration")` deferred to Week 8/9.
 8. [done] Daniel Wu: `messages_zh.properties` added under
    `src/main/resources/` with translations for all 10 existing keys. Diff contains
    no Java changes so we can point at it as proof the locale architecture is open

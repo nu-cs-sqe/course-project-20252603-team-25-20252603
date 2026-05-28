@@ -15,6 +15,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -48,9 +49,7 @@ public final class LocaleManager {
      * classpath.
      */
     LocaleManager(Path bundleDir) {
-        if (bundleDir == null) {
-            throw new IllegalArgumentException("bundleDir must not be null");
-        }
+        Objects.requireNonNull(bundleDir, "bundleDir must not be null");
         this.bundlesByLocale = loadBundlesFrom(bundleDir);
         if (bundlesByLocale.isEmpty()) {
             throw new IllegalStateException(NO_BUNDLES_MESSAGE);
@@ -95,9 +94,7 @@ public final class LocaleManager {
     }
 
     public void setActiveLocale(Locale locale) {
-        if (locale == null) {
-            throw new IllegalArgumentException("locale must not be null");
-        }
+        Objects.requireNonNull(locale, "locale must not be null");
         if (!bundlesByLocale.containsKey(locale)) {
             throw new IllegalArgumentException(
                 "locale not available: " + locale.toLanguageTag());
@@ -106,9 +103,7 @@ public final class LocaleManager {
     }
 
     public String get(String key) {
-        if (key == null) {
-            throw new IllegalArgumentException("key must not be null");
-        }
+        Objects.requireNonNull(key, "key must not be null");
         String value = bundlesByLocale.get(activeLocale).getProperty(key);
         if (value == null) {
             throw new MissingResourceException(

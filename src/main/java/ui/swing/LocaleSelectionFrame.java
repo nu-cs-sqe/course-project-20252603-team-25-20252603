@@ -4,6 +4,7 @@ import domain.locale.LocaleManager;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -33,12 +34,8 @@ public final class LocaleSelectionFrame extends JDialog {
                                 LocaleManager localeManager,
                                 Consumer<Locale> onSelected) {
         super(owner, true);
-        if (localeManager == null) {
-            throw new IllegalArgumentException("localeManager must not be null");
-        }
-        if (onSelected == null) {
-            throw new IllegalArgumentException("onSelected must not be null");
-        }
+        Objects.requireNonNull(localeManager, "localeManager must not be null");
+        Objects.requireNonNull(onSelected, "onSelected must not be null");
         setTitle(localeManager.get("locale.select.title"));
         setLayout(new GridLayout(0, 1, BUTTON_GAP, BUTTON_GAP));
         for (Locale locale : localeManager.getAvailableLocales()) {

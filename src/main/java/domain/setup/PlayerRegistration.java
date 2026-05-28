@@ -3,20 +3,31 @@ package domain.setup;
 import domain.player.PlayerColor;
 import java.util.Objects;
 
+/**
+ * User-facing registration record collected from the setup UI before any
+ * {@link domain.player.Player} is built. Validates name and color at the
+ * boundary so downstream domain code can trust its inputs.
+ */
 public final class PlayerRegistration {
 
     private final String name;
     private final PlayerColor color;
 
+    /**
+     * Creates a registration with the given name and color.
+     *
+     * @param name  non-blank display name; surrounding whitespace is trimmed
+     * @param color non-null color token
+     * @throws IllegalArgumentException if {@code name} is blank
+     * @throws NullPointerException     if {@code name} or {@code color} is null
+     */
     public PlayerRegistration(String name, PlayerColor color) {
-        if (name == null || name.trim().isEmpty()) {
+        Objects.requireNonNull(name, "name must not be null");
+        if (name.trim().isEmpty()) {
             throw new IllegalArgumentException("name must be non-blank");
         }
-        if (color == null) {
-            throw new IllegalArgumentException("color must not be null");
-        }
         this.name = name.trim();
-        this.color = color;
+        this.color = Objects.requireNonNull(color, "color must not be null");
     }
 
     public String name() {

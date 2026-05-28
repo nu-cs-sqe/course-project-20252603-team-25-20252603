@@ -33,7 +33,7 @@ class PlayerRegistrationTest {
 
     @Test
     void tc3_nullNameRejected() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> new PlayerRegistration(null, PlayerColor.RED));
     }
 
@@ -51,7 +51,7 @@ class PlayerRegistrationTest {
 
     @Test
     void tc6_nullColorRejected() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NullPointerException.class,
             () -> new PlayerRegistration("Yuki", null));
     }
 

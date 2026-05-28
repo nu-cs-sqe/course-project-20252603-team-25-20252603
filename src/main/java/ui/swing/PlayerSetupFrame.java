@@ -11,6 +11,7 @@ import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -60,18 +61,10 @@ public final class PlayerSetupFrame extends JDialog {
                      Consumer<Game> onComplete,
                      GameSetup gameSetup) {
         super(owner, true);
-        if (localeManager == null) {
-            throw new IllegalArgumentException("localeManager must not be null");
-        }
-        if (onComplete == null) {
-            throw new IllegalArgumentException("onComplete must not be null");
-        }
-        if (gameSetup == null) {
-            throw new IllegalArgumentException("gameSetup must not be null");
-        }
-        this.localeManager = localeManager;
-        this.onComplete = onComplete;
-        this.gameSetup = gameSetup;
+        this.localeManager =
+            Objects.requireNonNull(localeManager, "localeManager must not be null");
+        this.onComplete = Objects.requireNonNull(onComplete, "onComplete must not be null");
+        this.gameSetup = Objects.requireNonNull(gameSetup, "gameSetup must not be null");
         this.playerRowsPanel = new JPanel(new GridLayout(0, 1, 8, 8));
         this.errorLabel = new JLabel(" ");
         this.playerCountSpinner = new JSpinner(
