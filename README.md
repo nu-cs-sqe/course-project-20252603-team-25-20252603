@@ -7,6 +7,10 @@
 - Julian Tang
 - Shun Fujita
 
+## Task board
+Open work is tracked on [GitHub Issues](https://github.com/nu-cs-sqe/course-project-20252603-team-25-20252603/issues).
+See [`docs/project-board.md`](docs/project-board.md) for the team index and assignees.
+
 ## Dependencies
 - JDK 11
 - JUnit 5.10

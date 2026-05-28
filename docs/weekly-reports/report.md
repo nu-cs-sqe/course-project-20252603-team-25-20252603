@@ -1,15 +1,15 @@
 # Carry-over assignments (Game Setup — unowned work split, May 2026)
 
-Tasks below were previously unassigned or marked **All**. Status reflects `main`
-after PR #20 unless noted.
+**Task board:** see [`docs/project-board.md`](../project-board.md) (links to GitHub Issues).
 
-| # | Owner | Task | Status |
-|---|--------|------|--------|
-| A | **Daniel Wu** | `PlayerSetupFrame` + wire `Main` (locale → player setup → `GameSetup.build()`) + Swing CJK font helper | PR #21 |
-| B | **Daniel Kim** | Extend `LocaleClasspathIntegrationTest` for `zh`; add negative-path locale cases | not started |
-| C | **Julian Tang** | `@Tag("integration")` on integration tests + Gradle task/filter; `BoardFrame` stub | not started |
-| D | **Shun Fujita** | Expand `GameSetupIntegrationTest` (invalid count, duplicate name/color) | not started |
-| E | **All** | Review instructor feedback PR #19; keep `report.md` PR links current | ongoing |
+| # | Owner | GitHub Issue | Task | Status |
+|---|--------|--------------|------|--------|
+| A | **Daniel Wu** | [#22](https://github.com/nu-cs-sqe/course-project-20252603-team-25-20252603/issues/22) | `PlayerSetupFrame` + wire `Main` + Swing CJK font helper | PR #21 |
+| B | **Daniel Kim** | [#17](https://github.com/nu-cs-sqe/course-project-20252603-team-25-20252603/issues/17) | Locale integration tests (`zh`, negative paths) | open |
+| C | **Julian Tang** | [#23](https://github.com/nu-cs-sqe/course-project-20252603-team-25-20252603/issues/23), [#24](https://github.com/nu-cs-sqe/course-project-20252603-team-25-20252603/issues/24) | `@Tag("integration")` + Gradle task; `BoardFrame` stub | open |
+| D | **Shun Fujita** | [#16](https://github.com/nu-cs-sqe/course-project-20252603-team-25-20252603/issues/16) | Game Setup integration tests (happy + negative paths) | open |
+| — | **Daniel Wu** | [#18](https://github.com/nu-cs-sqe/course-project-20252603-team-25-20252603/issues/18) | `messages_zh.properties` | done — PR #20 |
+| E | **All** | — | Review instructor feedback PR #19; keep board + report current | ongoing |
 
 ---
 
