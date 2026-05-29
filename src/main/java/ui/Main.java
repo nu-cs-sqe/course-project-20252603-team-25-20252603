@@ -2,14 +2,14 @@ package ui;
 
 import domain.locale.LocaleManager;
 import domain.setup.Game;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import ui.swing.BoardFrame;
 import ui.swing.LocaleSelectionFrame;
 import ui.swing.PlayerSetupFrame;
 
 /**
- * Application entry point: locale selection, then player setup, then a ready
- * message when {@link domain.setup.GameSetup} finishes.
+ * Application entry point: locale selection, then player setup, then the
+ * {@link BoardFrame} stub once {@link domain.setup.GameSetup} finishes.
  */
 public final class Main {
 
@@ -41,16 +41,12 @@ public final class Main {
         PlayerSetupFrame setupDialog = new PlayerSetupFrame(
             null,
             manager,
-            game -> showGameReady(manager, game));
+            game -> showBoardFrame(manager, game));
         setupDialog.setVisible(true);
     }
 
-    private static void showGameReady(LocaleManager manager, Game game) {
-        String starter = game.turnOrder().current().getName();
-        JOptionPane.showMessageDialog(
-            null,
-            manager.get("setup.ready", starter),
-            manager.get("app.title"),
-            JOptionPane.INFORMATION_MESSAGE);
+    private static void showBoardFrame(LocaleManager manager, Game game) {
+        BoardFrame frame = new BoardFrame(manager, game);
+        frame.setVisible(true);
     }
 }
