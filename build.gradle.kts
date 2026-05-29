@@ -37,6 +37,17 @@ tasks.test {
     useJUnitPlatform()
 }
 
+tasks.register<Test>("integrationTest") {
+    description = "Runs only tests tagged with @Tag(\"integration\")."
+    group = "verification"
+    useJUnitPlatform {
+        includeTags("integration")
+    }
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    shouldRunAfter(tasks.test)
+}
+
 checkstyle {
     toolVersion = "10.18.2"
     configFile = file("config/checkstyle/checkstyle.xml")
