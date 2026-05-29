@@ -3,6 +3,7 @@ package integration;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import domain.board.Hex;
@@ -45,6 +46,19 @@ class GameSetupIntegrationTest {
         setup.registerPlayers(registrations);
 
         assertCompleteGame(setup.build(), registrations);
+    }
+
+    @Test
+    void gameSetup_rejectsDuplicatePlayerColors() {
+        GameSetup setup = new GameSetup(new Random(42));
+        List<PlayerRegistration> registrations = List.of(
+            new PlayerRegistration("Yuki", PlayerColor.RED),
+            new PlayerRegistration("Minji", PlayerColor.RED),
+            new PlayerRegistration("Arjun", PlayerColor.WHITE)
+        );
+
+        assertThrows(IllegalArgumentException.class,
+            () -> setup.registerPlayers(registrations));
     }
 
     private static void assertCompleteGame(
