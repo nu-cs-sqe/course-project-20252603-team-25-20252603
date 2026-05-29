@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import domain.locale.LocaleManager;
 import java.util.Locale;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
  * {@code src/main/resources} on the test classpath, discovered through
  * {@link LocaleManager#getInstance()}.
  */
+@Tag("integration")
 class LocaleClasspathIntegrationTest {
 
     private static final Locale EN = new Locale("en");

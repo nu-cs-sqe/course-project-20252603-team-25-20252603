@@ -12,6 +12,11 @@
 - JUnit 5.10
 - Gradle 8.10
 
+## Running tests
+- `./gradlew test` — runs the full suite (unit + integration tests).
+- `./gradlew integrationTest` — runs only tests tagged with `@Tag("integration")`
+  (everything under `src/test/java/integration/`).
+
 ## Local Git hooks (optional)
 To keep commit messages free of automatic `Co-authored-by: Cursor ...` trailers
 from the IDE, run once per clone:
