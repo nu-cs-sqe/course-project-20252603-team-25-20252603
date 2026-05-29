@@ -1,15 +1,15 @@
 # Carry-over assignments (Game Setup — unowned work split, May 2026)
 
 Tasks below were previously unassigned or marked **All**. Status reflects `main`
-after PR #20 unless noted.
+as of PR #30 unless noted.
 
 | # | Owner | Task | Status |
 |---|--------|------|--------|
 | A | **Daniel Wu** | `PlayerSetupFrame` + wire `Main` (locale → player setup → `GameSetup.build()`) + Swing CJK font helper | done — merged PR #21 |
-| B | **Daniel Kim** | Extend `LocaleClasspathIntegrationTest` for `zh`; add negative-path locale cases | not started |
+| B | **Daniel Kim** | Extend `LocaleClasspathIntegrationTest` for `zh`; add negative-path locale cases | done — PR #26 (landed by Daniel Wu after reassignment from #17) |
 | C | **Julian Tang** | `@Tag("integration")` on integration tests + Gradle task/filter; `BoardFrame` stub | done — merged PR #27 and PR #29 |
 | D | **Shun Fujita** | Expand `GameSetupIntegrationTest` (invalid count, duplicate name/color) | done — merged PR #28 |
-| E | **All** | Review instructor feedback PR #19; keep `report.md` PR links current | ongoing |
+| E | **All** | Review instructor feedback PR #19; keep `report.md` PR links current | done — merged PR #19 and PR #25 |
 
 ---
 
