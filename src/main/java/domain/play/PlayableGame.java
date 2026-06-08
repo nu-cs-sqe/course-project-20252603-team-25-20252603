@@ -2,6 +2,8 @@ package domain.play;
 
 import domain.board.Hex;
 import domain.board.TerrainType;
+import domain.deck.DevelopmentCard;
+import domain.deck.DevelopmentCardType;
 import domain.player.Player;
 import domain.setup.Game;
 import java.util.ArrayList;
@@ -25,6 +27,8 @@ public final class PlayableGame {
     private static final int MIN_POSITION = 0;
     private static final int MAX_POSITION = 18;
     private static final Map<ResourceType, Integer> SETTLEMENT_COST = settlementCost();
+    private static final Map<ResourceType, Integer> DEVELOPMENT_CARD_COST =
+        developmentCardCost();
 
     private final Game game;
     private final Map<Player, ResourceInventory> inventories = new HashMap<>();
@@ -99,6 +103,24 @@ public final class PlayableGame {
         inventories.get(player).spend(SETTLEMENT_COST);
         settlementOwners.put(position, player);
         victoryPoints.put(player, victoryPoints.get(player) + 1);
+    }
+
+    /**
+     * Buys and draws one development card for the current player. Victory Point
+     * cards are fully implemented in this D slice: they immediately add one
+     * victory point. Other card types are drawn but have no effect yet.
+     *
+     * @return drawn development card
+     * @throws IllegalStateException if the current player cannot pay the cost
+     */
+    public DevelopmentCard buyDevelopmentCard() {
+        Player player = currentPlayer();
+        inventories.get(player).spend(DEVELOPMENT_CARD_COST);
+        DevelopmentCard card = game.deck().draw();
+        if (card.getType() == DevelopmentCardType.VICTORY_POINT) {
+            victoryPoints.put(player, victoryPoints.get(player) + 1);
+        }
+        return card;
     }
 
     /**
@@ -221,6 +243,14 @@ public final class PlayableGame {
         EnumMap<ResourceType, Integer> cost = new EnumMap<>(ResourceType.class);
         cost.put(ResourceType.LUMBER, 1);
         cost.put(ResourceType.BRICK, 1);
+        cost.put(ResourceType.WOOL, 1);
+        cost.put(ResourceType.GRAIN, 1);
+        return Collections.unmodifiableMap(cost);
+    }
+
+    private static Map<ResourceType, Integer> developmentCardCost() {
+        EnumMap<ResourceType, Integer> cost = new EnumMap<>(ResourceType.class);
+        cost.put(ResourceType.ORE, 1);
         cost.put(ResourceType.WOOL, 1);
         cost.put(ResourceType.GRAIN, 1);
         return Collections.unmodifiableMap(cost);
