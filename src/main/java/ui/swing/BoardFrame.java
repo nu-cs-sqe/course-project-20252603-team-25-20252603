@@ -1,5 +1,6 @@
 package ui.swing;
 
+import domain.deck.DevelopmentCard;
 import domain.locale.LocaleManager;
 import domain.play.PlayableGame;
 import domain.play.ResourceInventory;
@@ -96,6 +97,9 @@ public final class BoardFrame extends JFrame {
         JButton build = new JButton(localeManager.get("board.build"));
         build.addActionListener(event -> buildSettlement());
         panel.add(build);
+        JButton buyCard = new JButton(localeManager.get("board.buyDevCard"));
+        buyCard.addActionListener(event -> buyDevelopmentCard());
+        panel.add(buyCard);
         JButton endTurn = new JButton(localeManager.get("board.endTurn"));
         endTurn.addActionListener(event -> endTurn());
         panel.add(endTurn);
@@ -118,6 +122,16 @@ public final class BoardFrame extends JFrame {
             appendLog(localeManager.get("board.log.build", player.getName(), position));
         } catch (IllegalArgumentException | IllegalStateException exception) {
             appendLog(localeManager.get("board.log.build.failed"));
+        }
+        refreshState();
+    }
+
+    private void buyDevelopmentCard() {
+        try {
+            DevelopmentCard card = playableGame.buyDevelopmentCard();
+            appendLog(localeManager.get("board.log.card", card.getType().name()));
+        } catch (IllegalStateException exception) {
+            appendLog(localeManager.get("board.log.card.failed"));
         }
         refreshState();
     }
