@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import domain.board.Hex;
 import domain.board.TerrainType;
+import domain.deck.DevelopmentCard;
+import domain.deck.DevelopmentCardType;
 import domain.player.Player;
 import domain.player.PlayerColor;
 import domain.setup.Game;
@@ -126,7 +128,29 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc11_unknownPlayerRejected() {
+    void tc11_buyingDevelopmentCardWithoutResourcesRejected() {
+        PlayableGame playable = PlayableGame.start(game());
+
+        assertThrows(IllegalStateException.class, playable::buyDevelopmentCard);
+    }
+
+    @Test
+    void tc12_victoryPointDevelopmentCardIncreasesVictoryPoints() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+        giveDevelopmentCardBudget(playable.inventory(current));
+        int startingPoints = playable.victoryPoints(current);
+
+        DevelopmentCard drawn;
+        do {
+            drawn = playable.buyDevelopmentCard();
+        } while (drawn.getType() != DevelopmentCardType.VICTORY_POINT);
+
+        assertEquals(startingPoints + 1, playable.victoryPoints(current));
+    }
+
+    @Test
+    void tc13_unknownPlayerRejected() {
         PlayableGame playable = PlayableGame.start(game());
         Player unknown = new Player("Nope", PlayerColor.ORANGE);
 
@@ -134,7 +158,7 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc12_positionOutsideBoardRejected() {
+    void tc14_positionOutsideBoardRejected() {
         PlayableGame playable = PlayableGame.start(game());
 
         assertAll(
@@ -179,5 +203,11 @@ class PlayableGameTest {
         inventory.add(ResourceType.BRICK, 1);
         inventory.add(ResourceType.WOOL, 1);
         inventory.add(ResourceType.GRAIN, 1);
+    }
+
+    private static void giveDevelopmentCardBudget(ResourceInventory inventory) {
+        inventory.add(ResourceType.ORE, 25);
+        inventory.add(ResourceType.WOOL, 25);
+        inventory.add(ResourceType.GRAIN, 25);
     }
 }

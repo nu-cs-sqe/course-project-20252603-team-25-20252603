@@ -65,13 +65,25 @@ Boundary inputs:
     - **State**: current player is player 0.
     - **Expected output**: current player becomes player 1.
 
+## Method under test: `buyDevelopmentCard()`
+
+- **TC11: Buying without resources rejected** ( :white_check_mark: )
+    - **State**: current player has no ore, wool, or grain.
+    - **Expected output**: throws `IllegalStateException`.
+
+- **TC12: Victory Point card increases victory points** ( :white_check_mark: )
+    - **State**: current player can pay for enough development cards to draw
+      until the standard deck yields a `VICTORY_POINT`.
+    - **Expected output**: drawing the Victory Point card increases that
+      player's victory points by 1.
+
 ## Method under test: `inventory(Player)` / `victoryPoints(Player)` /
 `ownedHexes(Player)` / `ownerOf(int)`
 
-- **TC11: Unknown player rejected** ( :white_check_mark: )
+- **TC13: Unknown player rejected** ( :white_check_mark: )
     - **State**: player not in this game.
     - **Expected output**: throws `IllegalArgumentException`.
 
-- **TC12: Position outside board rejected** ( :white_check_mark: )
+- **TC14: Position outside board rejected** ( :white_check_mark: )
     - **State**: `position = -1` or `position = 19`.
     - **Expected output**: throws `IllegalArgumentException`.
