@@ -1,6 +1,7 @@
 package domain.play;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -400,6 +401,27 @@ class PlayableGameTest {
             () -> assertEquals(firstOwnedPosition, owned.get(0).getPosition()),
             () -> assertEquals(18, owned.get(1).getPosition())
         );
+    }
+
+    @Test
+    void tc30_buildSettlementAfterWinRejectedEvenWithValidResourcesAndPosition() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player winner = playable.currentPlayer();
+        buildUntilWin(playable);
+        int unowned = unownedNonDesertPosition(playable);
+        giveSettlementCost(playable.inventory(winner));
+
+        assertThrows(IllegalStateException.class, () -> playable.buildSettlement(unowned));
+    }
+
+    @Test
+    void tc31_buyDevelopmentCardAfterWinRejectedEvenWithFunds() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player winner = playable.currentPlayer();
+        buildUntilWin(playable);
+        giveDevelopmentCardBudget(playable.inventory(winner));
+
+        assertThrows(IllegalStateException.class, playable::buyDevelopmentCard);
     }
 
     private static Game game() {
