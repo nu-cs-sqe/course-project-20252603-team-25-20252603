@@ -1,5 +1,6 @@
 package domain.play;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -113,6 +114,15 @@ class ResourceInventoryTest {
         expected.put(ResourceType.ORE, 1);
 
         assertEquals(expected, inventory.snapshot());
+    }
+
+    @Test
+    void tc13_zeroAmountCostEntryAcceptedAsNoop() {
+        ResourceInventory inventory = new ResourceInventory();
+        inventory.add(ResourceType.LUMBER, 1);
+
+        assertDoesNotThrow(() -> inventory.spend(Map.of(ResourceType.LUMBER, 0)));
+        assertEquals(1, inventory.count(ResourceType.LUMBER));
     }
 
     @Test

@@ -43,3 +43,11 @@ and payment maps that are affordable or unaffordable.
     - **State**: any inventory.
     - **Expected output**: modifying `snapshot()` throws
       `UnsupportedOperationException`.
+
+## Mutation-targeted boundaries
+
+- **TC13: Zero-amount cost entry accepted by `spend`** ( :white_check_mark: )
+    - **State**: inventory has some lumber; `cost = {LUMBER: 0}`.
+    - **Expected output**: `spend(cost)` does not throw and the lumber count
+      is unchanged (the cost-validation guard is `value < 0`, strict, not
+      `value <= 0`, so a zero entry is a valid no-op).

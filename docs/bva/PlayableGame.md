@@ -142,6 +142,53 @@ Boundary inputs:
     - **State**: `position = -1` or `position = 19`.
     - **Expected output**: throws `IllegalArgumentException`.
 
+
+## Mutation-targeted boundaries
+
+The following boundary cases harden tests against PIT survivors so each
+non-equivalent mutant is killed.
+
+- **TC30: Owned hexes returned in ascending board-position order** ( :white_check_mark: )
+    - **State**: the same player owns hexes whose insertion order into the
+      underlying owner map produces a non-monotonic iteration order (a
+      starting settlement at a low position, then a high non-desert position
+      built first, then a small non-desert position built second).
+    - **Expected output**: `ownedHexes(player)` returns positions in strictly
+      ascending order - the result is sorted, not in insertion order, and the
+      comparator returns the signed difference (so the sort actually reorders).
+
+- **TC31: Build after win rejected even with valid resources and position** ( :white_check_mark: )
+    - **State**: a player has already reached 10 victory points; the same
+      player has lumber, brick, wool, and grain; an unowned non-desert
+      position exists.
+    - **Expected output**: `buildSettlement(position)` throws
+      `IllegalStateException` (the game-over guard, not the cost guard, rejects).
+
+- **TC32: Buy development card after win rejected even with funds** ( :white_check_mark: )
+    - **State**: a player has already reached 10 victory points; the same
+      player has ore, wool, and grain.
+    - **Expected output**: `buyDevelopmentCard()` throws
+      `IllegalStateException` (the game-over guard, not the cost guard, rejects).
+
+- **TC33: Dice values exactly at both bounds accepted** ( :white_check_mark: )
+    - **State**: `dieOne = 1, dieTwo = 1` and `dieOne = 6, dieTwo = 6`.
+    - **Expected output**: both calls return a valid production count and do
+      not throw (the `< 1` and `> 6` checks are strict, not `<= 1` or `>= 6`).
+
+- **TC34: Position outside board rejected from `buildSettlement`** ( :white_check_mark: )
+    - **State**: `position = -1` or `position = 19`.
+    - **Expected output**: `buildSettlement(position)` throws
+      `IllegalArgumentException` (validation happens inside `hexAt`, before
+      indexing the hex list).
+
+- **Equivalent mutant: Monopoly `amount > 0` vs `amount >= 0`** ( documented in `docs/testing/mutation-coverage.md` )
+    - **State**: opponent inventory holds zero of the selected resource.
+    - **Notes**: Mutating `if (amount > 0)` to `if (amount >= 0)` enters the
+      `spend` branch with a zero amount and adds zero to the collector. Because
+      `ResourceInventory.spend({resource: 0})` and `collected += 0` are both
+      no-ops, the mutant is observationally indistinguishable from the
+      original — recorded as equivalent.
+
 ## Integration boundaries (PlayableGameIntegrationTest)
 
 These cases exercise the composed flow `GameSetup` → `Game` → `PlayableGame`
@@ -188,3 +235,4 @@ class where applicable.
     - **Expected output**: `rollDice(1,1)`, `buildSettlement(...)`,
       `buyDevelopmentCard()`, and `endTurn()` all throw
       `IllegalStateException` with no observable state change.
+

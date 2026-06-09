@@ -2,7 +2,9 @@ package domain.locale;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -179,5 +181,21 @@ class LocaleManagerTest {
         Files.writeString(file, "app.title=CATAN\n");
 
         assertThrows(IllegalStateException.class, () -> new LocaleManager(file));
+    }
+
+    @Test
+    void tc20_containsAnyBundleReturnsFalseForNonDirectory(@TempDir Path dir) throws IOException {
+        Path file = dir.resolve("messages_en.properties");
+        Files.writeString(file, "app.title=CATAN\n");
+
+        assertFalse(LocaleManager.containsAnyBundle(file));
+    }
+
+    @Test
+    void tc21_containsAnyBundleReturnsTrueWhenDirectoryHasMatchingBundle(@TempDir Path dir)
+            throws IOException {
+        writeBundle(dir, "en", "app.title", "CATAN");
+
+        assertTrue(LocaleManager.containsAnyBundle(dir));
     }
 }
