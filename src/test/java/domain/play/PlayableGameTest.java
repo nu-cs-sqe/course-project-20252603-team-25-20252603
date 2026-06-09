@@ -188,7 +188,32 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc16_roadBuildingAddsTwoRoads() {
+    void tc16_largestArmyTransfersOnlyWhenAnotherPlayerExceedsHolder() {
+        PlayableGame playable = PlayableGame.start(game());
+        final Player first = playable.currentPlayer();
+        playKnights(playable, 3);
+        playable.endTurn();
+        final Player second = playable.currentPlayer();
+
+        playKnights(playable, 3);
+
+        assertAll(
+            () -> assertEquals(Optional.of(first), playable.largestArmyHolder()),
+            () -> assertEquals(3, playable.victoryPoints(first)),
+            () -> assertEquals(1, playable.victoryPoints(second))
+        );
+
+        playable.applyDevelopmentCard(card(DevelopmentCardType.KNIGHT));
+
+        assertAll(
+            () -> assertEquals(Optional.of(second), playable.largestArmyHolder()),
+            () -> assertEquals(1, playable.victoryPoints(first)),
+            () -> assertEquals(3, playable.victoryPoints(second))
+        );
+    }
+
+    @Test
+    void tc17_roadBuildingAddsTwoRoads() {
         PlayableGame playable = PlayableGame.start(game());
         Player current = playable.currentPlayer();
 
@@ -198,7 +223,7 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc17_monopolyTransfersSelectedResource() {
+    void tc18_monopolyTransfersSelectedResource() {
         PlayableGame playable = PlayableGame.start(game());
         final Player current = playable.currentPlayer();
         playable.endTurn();
@@ -224,7 +249,28 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc18_monopolyNullChoiceRejected() {
+    void tc19_monopolyLeavesHandsUnchangedWhenNoOpponentHasResource() {
+        PlayableGame playable = PlayableGame.start(game());
+        final Player current = playable.currentPlayer();
+
+        playable.applyDevelopmentCard(
+            card(DevelopmentCardType.MONOPOLY),
+            ResourceType.BRICK,
+            ResourceType.ORE,
+            ResourceType.GRAIN);
+
+        assertAll(
+            () -> assertEquals(0, playable.inventory(current).count(ResourceType.BRICK)),
+            () -> playable.game().players().stream()
+                .filter(player -> !player.equals(current))
+                .forEach(player -> assertEquals(
+                    0,
+                    playable.inventory(player).count(ResourceType.BRICK)))
+        );
+    }
+
+    @Test
+    void tc20_monopolyNullChoiceRejected() {
         PlayableGame playable = PlayableGame.start(game());
 
         assertThrows(NullPointerException.class,
@@ -236,7 +282,7 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc19_yearOfPlentyGrantsSelectedResources() {
+    void tc21_yearOfPlentyGrantsSelectedResources() {
         PlayableGame playable = PlayableGame.start(game());
         Player current = playable.currentPlayer();
 
@@ -253,7 +299,7 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc20_yearOfPlentyNullChoiceRejected() {
+    void tc22_yearOfPlentyNullChoiceRejected() {
         PlayableGame playable = PlayableGame.start(game());
 
         assertThrows(NullPointerException.class,
@@ -265,7 +311,7 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc21_newGameHasNoWinner() {
+    void tc23_newGameHasNoWinner() {
         PlayableGame playable = PlayableGame.start(game());
 
         assertAll(
@@ -276,7 +322,7 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc22_playerWinsAtTenVictoryPoints() {
+    void tc24_playerWinsAtTenVictoryPoints() {
         PlayableGame playable = PlayableGame.start(game());
         Player current = playable.currentPlayer();
 
@@ -290,7 +336,7 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc23_actionsAfterWinRejected() {
+    void tc25_actionsAfterWinRejected() {
         PlayableGame playable = PlayableGame.start(game());
         buildUntilWin(playable);
 
@@ -303,20 +349,56 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc24_unknownPlayerRejected() {
+    void tc26_unknownPlayerRejected() {
         PlayableGame playable = PlayableGame.start(game());
         Player unknown = new Player("Nope", PlayerColor.ORANGE);
 
-        assertThrows(IllegalArgumentException.class, () -> playable.inventory(unknown));
+        assertAll(
+            () -> assertThrows(IllegalArgumentException.class, () -> playable.inventory(unknown)),
+            () -> assertThrows(IllegalArgumentException.class, () -> playable.ownedHexes(unknown)),
+            () -> assertThrows(IllegalArgumentException.class,
+                () -> playable.victoryPoints(unknown)),
+            () -> assertThrows(IllegalArgumentException.class,
+                () -> playable.knightsPlayed(unknown)),
+            () -> assertThrows(IllegalArgumentException.class, () -> playable.roadCount(unknown))
+        );
     }
 
     @Test
-    void tc25_positionOutsideBoardRejected() {
+    void tc27_positionOutsideBoardRejected() {
         PlayableGame playable = PlayableGame.start(game());
 
         assertAll(
             () -> assertThrows(IllegalArgumentException.class, () -> playable.ownerOf(-1)),
-            () -> assertThrows(IllegalArgumentException.class, () -> playable.ownerOf(19))
+            () -> assertThrows(IllegalArgumentException.class, () -> playable.ownerOf(19)),
+            () -> assertThrows(IllegalArgumentException.class, () -> playable.ownerOf(-2)),
+            () -> assertThrows(IllegalArgumentException.class, () -> playable.ownerOf(20))
+        );
+    }
+
+    @Test
+    void tc28_minAndMaxBoardPositionsCanBeQueried() {
+        PlayableGame playable = PlayableGame.start(game());
+
+        assertAll(
+            () -> assertEquals(playable.ownerOf(0), playable.ownerOf(0)),
+            () -> assertEquals(playable.ownerOf(18), playable.ownerOf(18))
+        );
+    }
+
+    @Test
+    void tc29_ownedHexesAreSortedByBoardPosition() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+        int firstOwnedPosition = playable.ownedHexes(current).get(0).getPosition();
+        giveSettlementCost(playable.inventory(current));
+        playable.buildSettlement(18);
+
+        List<Hex> owned = playable.ownedHexes(current);
+
+        assertAll(
+            () -> assertEquals(firstOwnedPosition, owned.get(0).getPosition()),
+            () -> assertEquals(18, owned.get(1).getPosition())
         );
     }
 
@@ -344,6 +426,12 @@ class PlayableGameTest {
 
     private static int totalResources(ResourceInventory inventory) {
         return inventory.snapshot().values().stream().mapToInt(Integer::intValue).sum();
+    }
+
+    private static void playKnights(PlayableGame playable, int count) {
+        for (int i = 0; i < count; i++) {
+            playable.applyDevelopmentCard(card(DevelopmentCardType.KNIGHT));
+        }
     }
 
     private static int unownedNonDesertPosition(PlayableGame playable) {

@@ -80,7 +80,8 @@ class PlayerTest {
         assertAll(
             () -> assertFalse(a.equals(null)),
             () -> assertFalse(a.equals("Daniel")),
-            () -> assertTrue(a.equals(a))
+            () -> assertTrue(a.equals(a)),
+            () -> assertNotEquals(0, a.hashCode())
         );
     }
 }

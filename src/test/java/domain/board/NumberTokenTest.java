@@ -60,7 +60,9 @@ class NumberTokenTest {
         NumberToken b = new NumberToken(8);
         assertAll(
             () -> assertEquals(a, b),
-            () -> assertEquals(a.hashCode(), b.hashCode())
+            () -> assertEquals(a.hashCode(), b.hashCode()),
+            () -> assertNotEquals(0, a.hashCode()),
+            () -> assertEquals(a, a)
         );
     }
 

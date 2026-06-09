@@ -16,6 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 class LocaleManagerTest {
 
     private static final Locale EN = new Locale("en");
+    private static final Locale EN_US = new Locale("en", "US");
     private static final Locale ES = new Locale("es");
     private static final Locale FR = new Locale("fr");
 
@@ -61,6 +62,7 @@ class LocaleManagerTest {
     @Test
     void tc4_nonMatchingFilesIgnored(@TempDir Path dir) throws IOException {
         writeBundle(dir, "en", "app.title", "CATAN");
+        Files.writeString(dir.resolve("messages_bad-name.properties"), "app.title=Noise\n");
         Files.writeString(dir.resolve("README.md"), "noise\n");
         Files.writeString(dir.resolve("messages.txt"), "noise\n");
 
@@ -146,5 +148,36 @@ class LocaleManagerTest {
         LocaleManager mgr = new LocaleManager(dir);
 
         assertEquals("Player 1 name:", mgr.get("setup.player.name.prompt", 1));
+    }
+
+    @Test
+    void tc17_getWithNoArgsReturnsPattern(@TempDir Path dir) throws IOException {
+        writeBundle(dir, "en", "setup.start", "Start Game");
+        LocaleManager mgr = new LocaleManager(dir);
+
+        assertAll(
+            () -> assertEquals("Start Game", mgr.get("setup.start", new Object[0])),
+            () -> assertEquals("Start Game", mgr.get("setup.start", (Object[]) null))
+        );
+    }
+
+    @Test
+    void tc18_regionBundleTagIsParsed(@TempDir Path dir) throws IOException {
+        writeBundle(dir, "en_US", "setup.start", "Start Game");
+
+        LocaleManager mgr = new LocaleManager(dir);
+
+        assertAll(
+            () -> assertEquals(List.of(EN_US), mgr.getAvailableLocales()),
+            () -> assertEquals("Start Game", mgr.get("setup.start"))
+        );
+    }
+
+    @Test
+    void tc19_nonDirectoryBundlePathRejected(@TempDir Path dir) throws IOException {
+        Path file = dir.resolve("messages_en.properties");
+        Files.writeString(file, "app.title=CATAN\n");
+
+        assertThrows(IllegalStateException.class, () -> new LocaleManager(file));
     }
 }

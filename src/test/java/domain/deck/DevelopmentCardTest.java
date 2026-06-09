@@ -49,7 +49,8 @@ class DevelopmentCardTest {
         assertAll(
             () -> assertFalse(card.equals(null)),
             () -> assertFalse(card.equals("KNIGHT")),
-            () -> assertTrue(card.equals(card))
+            () -> assertTrue(card.equals(card)),
+            () -> assertNotEquals(0, card.hashCode())
         );
     }
 }

@@ -72,6 +72,17 @@ tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
 
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    "ui/**",
+                    "**/*Type.class",
+                    "**/PlayerColor.class"
+                )
+            }
+        })
+    )
     reports {
         xml.required.set(false)
         csv.required.set(false)
@@ -89,8 +100,14 @@ tasks.build {
 }
 
 pitest {
-    targetClasses.set(setOf("domain.*", "ui.*"))
+    targetClasses.set(setOf("domain.*"))
     targetTests.set(setOf("domain.*", "integration.*"))
+    excludedClasses.set(setOf(
+        "domain.board.TerrainType",
+        "domain.deck.DevelopmentCardType",
+        "domain.play.ResourceType",
+        "domain.player.PlayerColor"
+    ))
     junit5PluginVersion.set("1.2.1")
     pitestVersion.set("1.15.0")
 

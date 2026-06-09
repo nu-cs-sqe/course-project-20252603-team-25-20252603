@@ -3,6 +3,8 @@ package domain.play;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
@@ -67,7 +69,54 @@ class ResourceInventoryTest {
     }
 
     @Test
-    void tc9_snapshotIsUnmodifiable() {
+    void tc8_negativeCostRejectedBeforeResourcesChange() {
+        ResourceInventory inventory = new ResourceInventory();
+        inventory.add(ResourceType.BRICK, 1);
+
+        assertThrows(IllegalArgumentException.class,
+            () -> inventory.spend(Map.of(ResourceType.BRICK, -1)));
+        assertEquals(1, inventory.count(ResourceType.BRICK));
+    }
+
+    @Test
+    void tc9_nullCostKeyRejectedBeforeResourcesChange() {
+        ResourceInventory inventory = new ResourceInventory();
+        inventory.add(ResourceType.BRICK, 1);
+        Map<ResourceType, Integer> cost = new HashMap<>();
+        cost.put(null, 1);
+
+        assertThrows(NullPointerException.class, () -> inventory.spend(cost));
+        assertEquals(1, inventory.count(ResourceType.BRICK));
+    }
+
+    @Test
+    void tc10_nullCostAmountRejectedBeforeResourcesChange() {
+        ResourceInventory inventory = new ResourceInventory();
+        inventory.add(ResourceType.BRICK, 1);
+        Map<ResourceType, Integer> cost = new HashMap<>();
+        cost.put(ResourceType.BRICK, null);
+
+        assertThrows(NullPointerException.class, () -> inventory.spend(cost));
+        assertEquals(1, inventory.count(ResourceType.BRICK));
+    }
+
+    @Test
+    void tc11_snapshotContainsCurrentCounts() {
+        ResourceInventory inventory = new ResourceInventory();
+        inventory.add(ResourceType.BRICK, 2);
+        inventory.add(ResourceType.ORE, 1);
+        EnumMap<ResourceType, Integer> expected = new EnumMap<>(ResourceType.class);
+        for (ResourceType type : ResourceType.values()) {
+            expected.put(type, 0);
+        }
+        expected.put(ResourceType.BRICK, 2);
+        expected.put(ResourceType.ORE, 1);
+
+        assertEquals(expected, inventory.snapshot());
+    }
+
+    @Test
+    void tc12_snapshotIsUnmodifiable() {
         ResourceInventory inventory = new ResourceInventory();
 
         assertThrows(UnsupportedOperationException.class,
