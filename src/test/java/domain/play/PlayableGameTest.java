@@ -2,6 +2,7 @@ package domain.play;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -150,7 +151,45 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc13_unknownPlayerRejected() {
+    void tc13_newGameHasNoWinner() {
+        PlayableGame playable = PlayableGame.start(game());
+
+        assertAll(
+            () -> assertFalse(playable.hasWinner()),
+            () -> assertFalse(playable.winner().isPresent()),
+            () -> assertEquals(10, playable.winningPoints())
+        );
+    }
+
+    @Test
+    void tc14_playerWinsAtTenVictoryPoints() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+
+        buildUntilWin(playable);
+
+        assertAll(
+            () -> assertEquals(10, playable.victoryPoints(current)),
+            () -> assertTrue(playable.hasWinner()),
+            () -> assertEquals(Optional.of(current), playable.winner())
+        );
+    }
+
+    @Test
+    void tc15_actionsAfterWinRejected() {
+        PlayableGame playable = PlayableGame.start(game());
+        buildUntilWin(playable);
+
+        assertAll(
+            () -> assertThrows(IllegalStateException.class, () -> playable.rollDice(1, 1)),
+            () -> assertThrows(IllegalStateException.class, () -> playable.buildSettlement(18)),
+            () -> assertThrows(IllegalStateException.class, playable::buyDevelopmentCard),
+            () -> assertThrows(IllegalStateException.class, playable::endTurn)
+        );
+    }
+
+    @Test
+    void tc16_unknownPlayerRejected() {
         PlayableGame playable = PlayableGame.start(game());
         Player unknown = new Player("Nope", PlayerColor.ORANGE);
 
@@ -158,7 +197,7 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc14_positionOutsideBoardRejected() {
+    void tc17_positionOutsideBoardRejected() {
         PlayableGame playable = PlayableGame.start(game());
 
         assertAll(
@@ -209,5 +248,13 @@ class PlayableGameTest {
         inventory.add(ResourceType.ORE, 25);
         inventory.add(ResourceType.WOOL, 25);
         inventory.add(ResourceType.GRAIN, 25);
+    }
+
+    private static void buildUntilWin(PlayableGame playable) {
+        while (playable.victoryPoints(playable.currentPlayer()) < 10) {
+            int position = unownedNonDesertPosition(playable);
+            giveSettlementCost(playable.inventory(playable.currentPlayer()));
+            playable.buildSettlement(position);
+        }
     }
 }

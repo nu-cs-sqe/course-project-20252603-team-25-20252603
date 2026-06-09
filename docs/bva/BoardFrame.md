@@ -31,21 +31,30 @@ headless UI tests are out of scope; cases below are verified manually via
   - **Expected output**: current player, victory points, resources, and board
     hex ownership are visible.
 
+- **TC6: Winner state shown** ( :white_check_mark: manual )
+  - **State**: a player reaches 10 victory points.
+  - **Expected output**: winner label and win log show the winning player.
+
 ## Actions
 
-- **TC6: Roll Dice updates resource state/log** ( :white_check_mark: manual )
+- **TC7: Roll Dice updates resource state/log** ( :white_check_mark: manual )
   - **State**: user clicks `board.roll`.
   - **Expected output**: dice roll is logged and resource counts refresh.
 
-- **TC7: Build Settlement validates position/resources** ( :white_check_mark: manual )
+- **TC8: Build Settlement validates position/resources** ( :white_check_mark: manual )
   - **State**: user selects a hex and clicks `board.build`.
   - **Expected output**: successful build updates owner/victory/resources;
     invalid build shows localized failure log text.
 
-- **TC8: End Turn advances current player** ( :white_check_mark: manual )
+- **TC9: End Turn advances current player** ( :white_check_mark: manual )
   - **State**: user clicks `board.endTurn`.
   - **Expected output**: current-player label changes to the next player.
 
-- **TC9: Locale switch reflected in all strings** ( :white_check_mark: manual )
+- **TC10: Actions after winner log game over** ( :white_check_mark: manual )
+  - **State**: a player has already won.
+  - **Expected output**: roll/build/buy/end-turn controls log localized
+    game-over text instead of changing state.
+
+- **TC11: Locale switch reflected in all strings** ( :white_check_mark: manual )
   - **State**: active locale = Spanish or Mandarin.
   - **Expected output**: labels, controls, and log messages use that locale.

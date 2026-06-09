@@ -43,6 +43,7 @@ public final class BoardFrame extends JFrame {
     private final Random dice = new Random();
     private final JLabel currentPlayerLabel = new JLabel();
     private final JLabel victoryLabel = new JLabel();
+    private final JLabel winnerLabel = new JLabel();
     private final JLabel inventoryLabel = new JLabel();
     private final JTextArea boardText = new JTextArea(TEXT_ROWS, TEXT_COLUMNS);
     private final StringBuilder logHistory = new StringBuilder();
@@ -83,6 +84,7 @@ public final class BoardFrame extends JFrame {
         panel.add(new JLabel(localeManager.get("board.players", names)));
         panel.add(currentPlayerLabel);
         panel.add(victoryLabel);
+        panel.add(winnerLabel);
         panel.add(inventoryLabel);
         return panel;
     }
@@ -107,10 +109,14 @@ public final class BoardFrame extends JFrame {
     }
 
     private void rollDice() {
-        int first = dice.nextInt(6) + 1;
-        int second = dice.nextInt(6) + 1;
-        int produced = playableGame.rollDice(first, second);
-        appendLog(localeManager.get("board.log.roll", first, second, produced));
+        try {
+            int first = dice.nextInt(6) + 1;
+            int second = dice.nextInt(6) + 1;
+            int produced = playableGame.rollDice(first, second);
+            appendLog(localeManager.get("board.log.roll", first, second, produced));
+        } catch (IllegalStateException exception) {
+            appendLog(localeManager.get("board.log.gameOver"));
+        }
         refreshState();
     }
 
@@ -120,8 +126,13 @@ public final class BoardFrame extends JFrame {
             Player player = playableGame.currentPlayer();
             playableGame.buildSettlement(position);
             appendLog(localeManager.get("board.log.build", player.getName(), position));
-        } catch (IllegalArgumentException | IllegalStateException exception) {
+            appendWinLogIfNeeded();
+        } catch (IllegalArgumentException exception) {
             appendLog(localeManager.get("board.log.build.failed"));
+        } catch (IllegalStateException exception) {
+            appendLog(playableGame.hasWinner()
+                ? localeManager.get("board.log.gameOver")
+                : localeManager.get("board.log.build.failed"));
         }
         refreshState();
     }
@@ -130,15 +141,22 @@ public final class BoardFrame extends JFrame {
         try {
             DevelopmentCard card = playableGame.buyDevelopmentCard();
             appendLog(localeManager.get("board.log.card", card.getType().name()));
+            appendWinLogIfNeeded();
         } catch (IllegalStateException exception) {
-            appendLog(localeManager.get("board.log.card.failed"));
+            appendLog(playableGame.hasWinner()
+                ? localeManager.get("board.log.gameOver")
+                : localeManager.get("board.log.card.failed"));
         }
         refreshState();
     }
 
     private void endTurn() {
-        Player player = playableGame.endTurn();
-        appendLog(localeManager.get("board.log.turn", player.getName()));
+        try {
+            Player player = playableGame.endTurn();
+            appendLog(localeManager.get("board.log.turn", player.getName()));
+        } catch (IllegalStateException exception) {
+            appendLog(localeManager.get("board.log.gameOver"));
+        }
         refreshState();
     }
 
@@ -148,6 +166,9 @@ public final class BoardFrame extends JFrame {
         victoryLabel.setText(localeManager.get(
             "board.victory",
             playableGame.victoryPoints(current)));
+        winnerLabel.setText(playableGame.winner()
+            .map(player -> localeManager.get("board.winner", player.getName()))
+            .orElse(localeManager.get("board.winningPoints", playableGame.winningPoints())));
         ResourceInventory inventory = playableGame.inventory(current);
         Map<ResourceType, Integer> resources = inventory.snapshot();
         inventoryLabel.setText(localeManager.get(
@@ -182,6 +203,11 @@ public final class BoardFrame extends JFrame {
 
     private void appendLog(String message) {
         logHistory.append(message).append(System.lineSeparator());
+    }
+
+    private void appendWinLogIfNeeded() {
+        playableGame.winner()
+            .ifPresent(player -> appendLog(localeManager.get("board.log.win", player.getName())));
     }
 
     private static String joinPlayerNames(List<Player> players) {
