@@ -175,7 +175,7 @@ class PlayableGameTest {
     @Test
     void tc15_largestArmyAwardedAtThreeKnights() {
         PlayableGame playable = PlayableGame.start(game());
-        Player current = playable.currentPlayer();
+        final Player current = playable.currentPlayer();
 
         playable.applyDevelopmentCard(card(DevelopmentCardType.KNIGHT));
         playable.applyDevelopmentCard(card(DevelopmentCardType.KNIGHT));
@@ -200,7 +200,7 @@ class PlayableGameTest {
     @Test
     void tc17_monopolyTransfersSelectedResource() {
         PlayableGame playable = PlayableGame.start(game());
-        Player current = playable.currentPlayer();
+        final Player current = playable.currentPlayer();
         playable.endTurn();
         playable.inventory(playable.currentPlayer()).add(ResourceType.BRICK, 2);
         playable.endTurn();
