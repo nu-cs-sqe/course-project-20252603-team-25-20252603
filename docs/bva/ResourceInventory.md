@@ -46,7 +46,7 @@ and payment maps that are affordable or unaffordable.
 
 ## Mutation-targeted boundaries
 
-- **TC10: Zero-amount cost entry accepted by `spend`** ( :white_check_mark: )
+- **TC13: Zero-amount cost entry accepted by `spend`** ( :white_check_mark: )
     - **State**: inventory has some lumber; `cost = {LUMBER: 0}`.
     - **Expected output**: `spend(cost)` does not throw and the lumber count
       is unchanged (the cost-validation guard is `value < 0`, strict, not

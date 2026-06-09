@@ -45,15 +45,18 @@ Generated reports:
 
 ## Current Results
 
-Last verified on June 9, 2026 with `./gradlew pitest`:
+Last verified on June 9, 2026 with `./gradlew clean check`:
 
 - Build result: passing
-- PIT line coverage for mutated classes: 515 / 525, 98%
+- PIT line coverage for mutated classes: 516 / 525, 98%
 - PIT mutation score: 250 / 251 killed, 99%
 - PIT mutation test strength (killed of covered): 250 / 251, 99%
 - PIT no-coverage mutations: 0
 - Equivalent mutants documented and excluded: 1 (see below)
 - Effective non-equivalent mutation score: 250 / 250, 100%
+- Jacoco instruction coverage: 98%
+- Jacoco branch coverage: 95%
+- Jacoco missed complexity: 10 of 227
 
 Last verified on June 9, 2026 with `./gradlew integrationTest`:
 
@@ -128,3 +131,14 @@ mutant is recorded here and excluded from the effective mutation score.
 
 None for the B-rubric mutation target: every non-equivalent mutant is killed,
 and the one equivalent mutant is documented above.
+
+Jacoco still reports 10 missed complexity points, so the project is not yet at
+the rubric's 100% cyclomatic coverage target for non-GUI and non-enum code.
+The remaining missed complexity is concentrated in:
+
+- `domain.play`
+- `domain.locale`
+
+The next coverage branch should either add focused BVA rows and tests for those
+missed branches or document why a branch is unreachable or not meaningful under
+the current domain model.

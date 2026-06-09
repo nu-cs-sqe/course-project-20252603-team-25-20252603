@@ -38,7 +38,7 @@ Boundary inputs:
 
 - **TC5: Null bundle directory rejected** ( :white_check_mark: )
     - **State**: `bundleDir = null`.
-    - **Expected output**: throws `IllegalArgumentException`.
+    - **Expected output**: throws `NullPointerException`.
 
 ## Method under test: `getAvailableLocales()`
 - **TC6: Returned list is unmodifiable** ( :white_check_mark: )
@@ -57,7 +57,7 @@ Boundary inputs:
 - **TC8: Null locale rejected** ( :white_check_mark: )
     - **State**: any manager.
     - **Expected output**: `setActiveLocale(null)` throws
-      `IllegalArgumentException`; active locale is unchanged.
+      `NullPointerException`; active locale is unchanged.
 
 - **TC9: Locale not in available set rejected** ( :white_check_mark: )
     - **State**: manager with `[en]`.
@@ -83,7 +83,7 @@ Boundary inputs:
 
 - **TC14: Null key rejected** ( :white_check_mark: )
     - **State**: any manager.
-    - **Expected output**: throws `IllegalArgumentException`.
+    - **Expected output**: throws `NullPointerException`.
 
 - **TC15: Missing key throws MissingResourceException** ( :white_check_mark: )
     - **State**: manager whose active bundle has no entry for `nope.key`.
@@ -97,7 +97,21 @@ Boundary inputs:
     - **Expected output**: `get("setup.player.name.prompt", 1)` returns
       `"Player 1 name:"`.
 
-- **TC17: Zero args delegates to plain get** ( implemented in TC12 )
+- **TC17: Zero args delegates to plain get** ( :white_check_mark: )
+    - **State**: active bundle has `setup.start=Start Game`; caller passes
+      either an empty argument array or a null argument array.
+    - **Expected output**: `get("setup.start", args)` returns `"Start Game"`.
+
+- **TC18: Region bundle tag is parsed** ( :white_check_mark: )
+    - **State**: `bundleDir` contains `messages_en_US.properties`.
+    - **Expected output**: `getAvailableLocales()` returns `[en_US]` and
+      lookups resolve through that bundle.
+
+- **TC19: Non-directory bundle path rejected** ( :white_check_mark: )
+    - **State**: constructor receives a regular file path instead of a
+      directory.
+    - **Expected output**: throws `IllegalStateException` because no bundles
+      can be loaded from the supplied path.
 
 ## Method under test: `containsAnyBundle(Path)` (package-private; called from `discoverDefaultBundleDir` during `getInstance`)
 
@@ -106,9 +120,14 @@ skip non-directory file URLs when discovering the bundle root. The classpath
 typically only exposes directory roots, so this branch needs an explicit
 boundary test to be exercised.
 
-- **TC18: Non-directory path reports no bundles** ( :white_check_mark: )
+- **TC20: Non-directory path reports no bundles** ( :white_check_mark: )
     - **State**: a path that exists as a regular file (not a directory),
       regardless of name.
     - **Expected output**: `containsAnyBundle(path)` returns `false`, so the
       classpath scanner continues to the next root instead of attempting to
       load bundles from a non-directory.
+
+- **TC21: Directory with matching bundle reports bundles** ( :white_check_mark: )
+    - **State**: a directory contains at least one
+      `messages_<lang>.properties` file.
+    - **Expected output**: `containsAnyBundle(path)` returns `true`.
