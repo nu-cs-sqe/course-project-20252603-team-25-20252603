@@ -124,9 +124,12 @@ class PlayableGameTest {
         Game game = game();
         PlayableGame playable = PlayableGame.start(game);
 
-        playable.endTurn();
+        Player advanced = playable.endTurn();
 
-        assertEquals(game.players().get(1), playable.currentPlayer());
+        assertAll(
+            () -> assertEquals(game.players().get(1), advanced),
+            () -> assertEquals(game.players().get(1), playable.currentPlayer())
+        );
     }
 
     @Test
@@ -404,7 +407,37 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc30_buildSettlementAfterWinRejectedEvenWithValidResourcesAndPosition() {
+    void tc30_ownedHexesAreSortedWhenInsertionOrderIsNonMonotonic() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+        // Build at position 18 first (proven non-desert in tc29) then at a
+        // smaller non-desert position. The underlying HashMap chains the
+        // higher-bucket entry behind the smaller-bucket starting key, so the
+        // raw entrySet iteration yields [start, 18, lowPos] while ascending
+        // order is [start, lowPos, 18]. ownedHexes must return the sorted
+        // ordering with a comparator that returns the signed position
+        // difference; either removing the sort call or replacing the
+        // comparator return with 0 leaves the list unsorted and fails the
+        // strict-ascending assertion.
+        giveSettlementCost(playable.inventory(current));
+        playable.buildSettlement(18);
+        int lowPos = firstUnownedNonDesertAtLeast(playable, 3);
+        giveSettlementCost(playable.inventory(current));
+        playable.buildSettlement(lowPos);
+
+        List<Hex> owned = playable.ownedHexes(current);
+
+        assertAll(
+            () -> assertEquals(3, owned.size()),
+            () -> assertTrue(owned.get(0).getPosition() < owned.get(1).getPosition(),
+                "expected ascending order, got: " + ownedPositions(owned)),
+            () -> assertTrue(owned.get(1).getPosition() < owned.get(2).getPosition(),
+                "expected ascending order, got: " + ownedPositions(owned))
+        );
+    }
+
+    @Test
+    void tc31_buildSettlementAfterWinRejectedEvenWithValidResourcesAndPosition() {
         PlayableGame playable = PlayableGame.start(game());
         Player winner = playable.currentPlayer();
         buildUntilWin(playable);
@@ -415,7 +448,7 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc31_buyDevelopmentCardAfterWinRejectedEvenWithFunds() {
+    void tc32_buyDevelopmentCardAfterWinRejectedEvenWithFunds() {
         PlayableGame playable = PlayableGame.start(game());
         Player winner = playable.currentPlayer();
         buildUntilWin(playable);
@@ -463,6 +496,20 @@ class PlayableGameTest {
             .findFirst()
             .get()
             .getPosition();
+    }
+
+    private static int firstUnownedNonDesertAtLeast(PlayableGame playable, int minimum) {
+        return playable.game().board().getHexes().stream()
+            .filter(hex -> hex.getPosition() >= minimum)
+            .filter(hex -> hex.getTerrain() != TerrainType.DESERT)
+            .filter(hex -> !playable.ownerOf(hex.getPosition()).isPresent())
+            .findFirst()
+            .get()
+            .getPosition();
+    }
+
+    private static List<Integer> ownedPositions(List<Hex> owned) {
+        return owned.stream().map(Hex::getPosition).collect(java.util.stream.Collectors.toList());
     }
 
     private static void giveSettlementCost(ResourceInventory inventory) {
