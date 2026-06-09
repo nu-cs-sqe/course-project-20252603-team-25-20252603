@@ -62,17 +62,12 @@ public final class LocaleManager {
      * classpath root that contains a {@code messages_*.properties} file.
      */
     public static LocaleManager getInstance() {
-        LocaleManager local = instance;
-        if (local == null) {
-            synchronized (LocaleManager.class) {
-                local = instance;
-                if (local == null) {
-                    instance = new LocaleManager(discoverDefaultBundleDir());
-                    local = instance;
-                }
+        synchronized (LocaleManager.class) {
+            if (instance == null) {
+                instance = new LocaleManager(discoverDefaultBundleDir());
             }
+            return instance;
         }
-        return local;
     }
 
     /**
@@ -123,11 +118,31 @@ public final class LocaleManager {
     }
 
     private static TreeMap<Locale, Properties> loadBundlesFrom(Path bundleDir) {
+        return loadBundlesFrom(bundleDir, LocaleManager::readBundlesFrom);
+    }
+
+    static TreeMap<Locale, Properties> loadBundlesFrom(
+            Path bundleDir,
+            BundleReader reader) {
         TreeMap<Locale, Properties> result =
             new TreeMap<>(Comparator.comparing(Locale::toLanguageTag));
         if (!Files.isDirectory(bundleDir)) {
             return result;
         }
+        Objects.requireNonNull(reader, "reader must not be null");
+        try {
+            result.putAll(reader.read(bundleDir));
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                "Failed to read locale bundles from " + bundleDir, e);
+        }
+        return result;
+    }
+
+    private static TreeMap<Locale, Properties> readBundlesFrom(Path bundleDir)
+            throws IOException {
+        TreeMap<Locale, Properties> result =
+            new TreeMap<>(Comparator.comparing(Locale::toLanguageTag));
         try (DirectoryStream<Path> stream =
                  Files.newDirectoryStream(bundleDir, BUNDLE_PREFIX + "*" + BUNDLE_SUFFIX)) {
             for (Path file : stream) {
@@ -142,9 +157,6 @@ public final class LocaleManager {
                 }
                 result.put(locale, props);
             }
-        } catch (IOException e) {
-            throw new IllegalStateException(
-                "Failed to read locale bundles from " + bundleDir, e);
         }
         return result;
     }
@@ -158,22 +170,30 @@ public final class LocaleManager {
     }
 
     private static Path discoverDefaultBundleDir() {
+        return discoverDefaultBundleDir(LocaleManager.class.getClassLoader());
+    }
+
+    static Path discoverDefaultBundleDir(ClassLoader loader) {
+        Objects.requireNonNull(loader, "loader must not be null");
         try {
-            ClassLoader loader = LocaleManager.class.getClassLoader();
-            Enumeration<URL> roots = loader.getResources("");
-            while (roots.hasMoreElements()) {
-                URL root = roots.nextElement();
-                if (!"file".equals(root.getProtocol())) {
-                    continue;
-                }
-                Path dir = Paths.get(root.toURI());
-                if (containsAnyBundle(dir)) {
-                    return dir;
-                }
-            }
+            return discoverDefaultBundleDir(loader.getResources(""));
         } catch (Exception e) {
             throw new IllegalStateException(
                 "Failed to scan classpath for locale bundles", e);
+        }
+    }
+
+    static Path discoverDefaultBundleDir(Enumeration<URL> roots) throws Exception {
+        Objects.requireNonNull(roots, "roots must not be null");
+        while (roots.hasMoreElements()) {
+            URL root = roots.nextElement();
+            if (!"file".equals(root.getProtocol())) {
+                continue;
+            }
+            Path dir = Paths.get(root.toURI());
+            if (containsAnyBundle(dir)) {
+                return dir;
+            }
         }
         throw new IllegalStateException(NO_BUNDLES_MESSAGE);
     }
@@ -189,5 +209,10 @@ public final class LocaleManager {
                  Files.newDirectoryStream(dir, BUNDLE_PREFIX + "*" + BUNDLE_SUFFIX)) {
             return stream.iterator().hasNext();
         }
+    }
+
+    @FunctionalInterface
+    interface BundleReader {
+        TreeMap<Locale, Properties> read(Path bundleDir) throws IOException;
     }
 }

@@ -481,6 +481,60 @@ class PlayableGameTest {
         assertThrows(IllegalStateException.class, playable::buyDevelopmentCard);
     }
 
+    @Test
+    void tc35_buildingOnDesertRejectedBeforeSpendingResources() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+        int desertPosition = playable.game().board().getDesert().getPosition();
+        giveSettlementCost(playable.inventory(current));
+
+        assertThrows(IllegalArgumentException.class,
+            () -> playable.buildSettlement(desertPosition));
+        assertEquals(1, playable.inventory(current).count(ResourceType.BRICK));
+    }
+
+    @Test
+    void tc36_robberBlocksProductionOnOwnedHex() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+        Hex owned = playable.ownedHexes(current).get(0);
+        owned.placeRobber();
+        int value = owned.getToken().get().getValue();
+        ResourceType resource = ResourceType.fromTerrain(owned.getTerrain()).get();
+
+        int produced = playable.rollDice(dieOne(value), dieTwo(value));
+
+        assertAll(
+            () -> assertEquals(0, produced),
+            () -> assertEquals(0, playable.inventory(current).count(resource))
+        );
+    }
+
+    @Test
+    void tc37_desertWithoutRobberStillProducesNothing() {
+        PlayableGame playable = PlayableGame.start(game());
+        playable.game().board().getDesert().removeRobber();
+
+        int produced = playable.rollDice(3, 4);
+
+        assertEquals(0, produced);
+    }
+
+    @Test
+    void tc38_largestArmyHolderKeepsBonusWhenPlayingAdditionalKnight() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+        playKnights(playable, 3);
+
+        playable.applyDevelopmentCard(card(DevelopmentCardType.KNIGHT));
+
+        assertAll(
+            () -> assertEquals(Optional.of(current), playable.largestArmyHolder()),
+            () -> assertEquals(4, playable.knightsPlayed(current)),
+            () -> assertEquals(3, playable.victoryPoints(current))
+        );
+    }
+
     private static Game game() {
         GameSetup setup = new GameSetup(new Random(42));
         setup.registerPlayers(List.of(

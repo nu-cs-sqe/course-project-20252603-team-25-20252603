@@ -3,12 +3,16 @@ package domain.locale;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -197,5 +201,62 @@ class LocaleManagerTest {
         writeBundle(dir, "en", "app.title", "CATAN");
 
         assertTrue(LocaleManager.containsAnyBundle(dir));
+    }
+
+    @Test
+    void tc22_getInstanceReturnsCachedManager() {
+        LocaleManager.resetForTesting();
+
+        try {
+            LocaleManager first = LocaleManager.getInstance();
+            LocaleManager second = LocaleManager.getInstance();
+
+            assertSame(first, second);
+        } finally {
+            LocaleManager.resetForTesting();
+        }
+    }
+
+    @Test
+    void tc23_bundleReaderFailureIsWrapped(@TempDir Path dir) throws IOException {
+        writeBundle(dir, "en", "app.title", "CATAN");
+
+        assertThrows(IllegalStateException.class,
+            () -> LocaleManager.loadBundlesFrom(dir, path -> {
+                throw new IOException("boom");
+            }));
+    }
+
+    @Test
+    void tc24_discoverySkipsNonFileRootsAndFindsBundleDirectory(@TempDir Path dir)
+            throws Exception {
+        writeBundle(dir, "en", "app.title", "CATAN");
+        Enumeration<URL> roots = Collections.enumeration(List.of(
+            new URL("jar:file:/tmp/no-bundles.jar!/"),
+            dir.toUri().toURL()
+        ));
+
+        assertEquals(dir, LocaleManager.discoverDefaultBundleDir(roots));
+    }
+
+    @Test
+    void tc25_discoveryRejectsClasspathWithNoBundles() throws Exception {
+        Enumeration<URL> roots = Collections.emptyEnumeration();
+
+        assertThrows(IllegalStateException.class,
+            () -> LocaleManager.discoverDefaultBundleDir(roots));
+    }
+
+    @Test
+    void tc26_discoveryWrapsClasspathScanFailure() {
+        ClassLoader loader = new ClassLoader(null) {
+            @Override
+            public Enumeration<URL> getResources(String name) throws IOException {
+                throw new IOException("boom");
+            }
+        };
+
+        assertThrows(IllegalStateException.class,
+            () -> LocaleManager.discoverDefaultBundleDir(loader));
     }
 }

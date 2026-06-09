@@ -131,3 +131,33 @@ boundary test to be exercised.
     - **State**: a directory contains at least one
       `messages_<lang>.properties` file.
     - **Expected output**: `containsAnyBundle(path)` returns `true`.
+
+## Method under test: `getInstance()` / classpath discovery helpers
+
+- **TC22: Singleton returns cached manager** ( :white_check_mark: )
+    - **State**: process-wide manager has already been initialized from the
+      test classpath.
+    - **Expected output**: a second `getInstance()` call returns the same
+      object without rediscovering bundles.
+
+- **TC23: Bundle reader failure is wrapped** ( :white_check_mark: )
+    - **State**: bundle directory exists, but the low-level reader throws
+      `IOException`.
+    - **Expected output**: the loader throws `IllegalStateException` with the
+      I/O failure as the cause.
+
+- **TC24: Discovery skips non-file roots and finds bundle directory** ( :white_check_mark: )
+    - **State**: classpath root enumeration contains a non-file URL followed by
+      a file URL for a directory with a matching bundle.
+    - **Expected output**: discovery ignores the non-file root and returns the
+      bundle directory.
+
+- **TC25: Discovery rejects classpath with no bundles** ( :white_check_mark: )
+    - **State**: classpath root enumeration is empty.
+    - **Expected output**: discovery throws `IllegalStateException` explaining
+      that no bundles were found.
+
+- **TC26: Discovery wraps classpath scan failure** ( :white_check_mark: )
+    - **State**: classloader throws `IOException` while enumerating roots.
+    - **Expected output**: discovery throws `IllegalStateException` with the
+      scan failure as the cause.

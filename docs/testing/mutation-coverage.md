@@ -48,15 +48,15 @@ Generated reports:
 Last verified on June 9, 2026 with `./gradlew clean check`:
 
 - Build result: passing
-- PIT line coverage for mutated classes: 516 / 525, 98%
-- PIT mutation score: 250 / 251 killed, 99%
-- PIT mutation test strength (killed of covered): 250 / 251, 99%
+- PIT line coverage for mutated classes: 526 / 527, 99%
+- PIT mutation score: 254 / 255 killed, 99%
+- PIT mutation test strength (killed of covered): 254 / 255, 99%
 - PIT no-coverage mutations: 0
 - Equivalent mutants documented and excluded: 1 (see below)
-- Effective non-equivalent mutation score: 250 / 250, 100%
-- Jacoco instruction coverage: 98%
-- Jacoco branch coverage: 95%
-- Jacoco missed complexity: 10 of 227
+- Effective non-equivalent mutation score: 254 / 254, 100%
+- Jacoco instruction coverage: 100%
+- Jacoco branch coverage: 98%
+- Jacoco missed complexity: 0 of 230
 
 Last verified on June 9, 2026 with `./gradlew integrationTest`:
 
@@ -129,16 +129,12 @@ mutant is recorded here and excluded from the effective mutation score.
 
 ## Remaining Gaps
 
-None for the B-rubric mutation target: every non-equivalent mutant is killed,
-and the one equivalent mutant is documented above.
+None for the B-rubric mutation and cyclomatic coverage targets: every
+non-equivalent mutant is killed, the one equivalent mutant is documented above,
+and Jacoco reports 0 missed complexity for the filtered non-GUI/non-enum domain
+scope.
 
-Jacoco still reports 10 missed complexity points, so the project is not yet at
-the rubric's 100% cyclomatic coverage target for non-GUI and non-enum code.
-The remaining missed complexity is concentrated in:
-
-- `domain.play`
-- `domain.locale`
-
-The next coverage branch should either add focused BVA rows and tests for those
-missed branches or document why a branch is unreachable or not meaningful under
-the current domain model.
+Jacoco still reports 3 missed branches in `domain.play`; these do not count as
+missed complexity. They come from exhaustive enum-switch and domain-invariant
+control-flow details that are not meaningful user-visible scenarios under the
+current model.

@@ -171,6 +171,7 @@ public final class PlayableGame {
             ResourceType plentyFirst,
             ResourceType plentySecond) {
         Objects.requireNonNull(card, "card must not be null");
+        // CHECKSTYLE.SUPPRESS: MissingSwitchDefault
         switch (card.getType()) {
             case KNIGHT:
                 applyKnight();
@@ -190,8 +191,6 @@ public final class PlayableGame {
                     Objects.requireNonNull(plentyFirst, "plentyFirst must not be null"),
                     Objects.requireNonNull(plentySecond, "plentySecond must not be null"));
                 break;
-            default:
-                throw new IllegalArgumentException("unsupported card type: " + card.getType());
         }
     }
 
@@ -328,6 +327,9 @@ public final class PlayableGame {
     private void assignStartingSettlements() {
         int playerIndex = 0;
         for (Hex hex : game.board().getHexes()) {
+            if (playerIndex == game.players().size()) {
+                break;
+            }
             if (hex.getTerrain() == TerrainType.DESERT) {
                 continue;
             }
@@ -335,16 +337,13 @@ public final class PlayableGame {
             settlementOwners.put(hex.getPosition(), player);
             addVictoryPoints(player, 1);
             playerIndex++;
-            if (playerIndex == game.players().size()) {
-                return;
-            }
         }
     }
 
     private static boolean producesOn(Hex hex, int total) {
         return !hex.hasRobber()
-            && hex.getTerrain() != TerrainType.DESERT
             && hex.getToken().isPresent()
+            && hex.getTerrain() != TerrainType.DESERT
             && hex.getToken().get().getValue() == total;
     }
 

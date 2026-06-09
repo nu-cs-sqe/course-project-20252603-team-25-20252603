@@ -181,6 +181,27 @@ non-equivalent mutant is killed.
       `IllegalArgumentException` (validation happens inside `hexAt`, before
       indexing the hex list).
 
+- **TC35: Building on desert rejected before resources are spent** ( :white_check_mark: )
+    - **State**: current player has exact settlement resources and chooses the
+      desert position.
+    - **Expected output**: `buildSettlement(position)` throws
+      `IllegalArgumentException`, and the player's resources are unchanged.
+
+- **TC36: Robber blocks production on an owned hex** ( :white_check_mark: )
+    - **State**: current player's owned non-desert hex has the robber, and the
+      dice sum matches that hex's token.
+    - **Expected output**: `rollDice` returns 0 and grants no resource.
+
+- **TC37: Desert without robber still produces nothing** ( :white_check_mark: )
+    - **State**: desert has no robber and dice are rolled.
+    - **Expected output**: `rollDice` returns 0 because the desert has no
+      production token/resource.
+
+- **TC38: Largest Army holder keeps bonus when playing an additional knight** ( :white_check_mark: )
+    - **State**: current player already holds Largest Army with three knights.
+    - **Expected output**: playing a fourth knight increases knight count but
+      does not re-award or remove the 2-point Largest Army bonus.
+
 - **Equivalent mutant: Monopoly `amount > 0` vs `amount >= 0`** ( documented in `docs/testing/mutation-coverage.md` )
     - **State**: opponent inventory holds zero of the selected resource.
     - **Notes**: Mutating `if (amount > 0)` to `if (amount >= 0)` enters the
@@ -235,4 +256,3 @@ class where applicable.
     - **Expected output**: `rollDice(1,1)`, `buildSettlement(...)`,
       `buyDevelopmentCard()`, and `endTurn()` all throw
       `IllegalStateException` with no observable state change.
-
