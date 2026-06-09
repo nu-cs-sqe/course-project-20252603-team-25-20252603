@@ -90,7 +90,8 @@ class PlayerRegistrationTest {
         assertAll(
             () -> assertFalse(registration.equals(null)),
             () -> assertFalse(registration.equals("Yuki")),
-            () -> assertTrue(registration.equals(registration))
+            () -> assertTrue(registration.equals(registration)),
+            () -> assertNotEquals(0, registration.hashCode())
         );
     }
 }
