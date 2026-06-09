@@ -26,6 +26,7 @@ public final class PlayableGame {
     private static final int MAX_DIE_FACE = 6;
     private static final int MIN_POSITION = 0;
     private static final int MAX_POSITION = 18;
+    private static final int WINNING_POINTS = 10;
     private static final Map<ResourceType, Integer> SETTLEMENT_COST = settlementCost();
     private static final Map<ResourceType, Integer> DEVELOPMENT_CARD_COST =
         developmentCardCost();
@@ -69,6 +70,7 @@ public final class PlayableGame {
      * @throws IllegalArgumentException if either die face is outside [1, 6]
      */
     public int rollDice(int dieOne, int dieTwo) {
+        rejectIfGameOver();
         validateDie(dieOne);
         validateDie(dieTwo);
         int total = dieOne + dieTwo;
@@ -92,6 +94,7 @@ public final class PlayableGame {
      * @throws IllegalStateException    if the current player cannot pay the settlement cost
      */
     public void buildSettlement(int position) {
+        rejectIfGameOver();
         Hex hex = hexAt(position);
         if (hex.getTerrain() == TerrainType.DESERT) {
             throw new IllegalArgumentException("cannot build on desert");
@@ -114,6 +117,7 @@ public final class PlayableGame {
      * @throws IllegalStateException if the current player cannot pay the cost
      */
     public DevelopmentCard buyDevelopmentCard() {
+        rejectIfGameOver();
         Player player = currentPlayer();
         inventories.get(player).spend(DEVELOPMENT_CARD_COST);
         DevelopmentCard card = game.deck().draw();
@@ -129,6 +133,7 @@ public final class PlayableGame {
      * @return player whose turn is now active
      */
     public Player endTurn() {
+        rejectIfGameOver();
         return game.turnOrder().advance();
     }
 
@@ -185,6 +190,33 @@ public final class PlayableGame {
         return victoryPoints.get(player);
     }
 
+    public int winningPoints() {
+        return WINNING_POINTS;
+    }
+
+    /**
+     * Reports whether any player has reached the CATAN winning score.
+     *
+     * @return true when a winner exists
+     */
+    public boolean hasWinner() {
+        return winner().isPresent();
+    }
+
+    /**
+     * Returns the winning player, if someone has reached 10 victory points.
+     *
+     * @return winning player, or empty when the game is still active
+     */
+    public Optional<Player> winner() {
+        for (Player player : game.players()) {
+            if (victoryPoints.get(player) >= WINNING_POINTS) {
+                return Optional.of(player);
+            }
+        }
+        return Optional.empty();
+    }
+
     private void initializePlayers() {
         for (Player player : game.players()) {
             inventories.put(player, new ResourceInventory());
@@ -236,6 +268,12 @@ public final class PlayableGame {
         Objects.requireNonNull(player, "player must not be null");
         if (!inventories.containsKey(player)) {
             throw new IllegalArgumentException("player is not in this game");
+        }
+    }
+
+    private void rejectIfGameOver() {
+        if (hasWinner()) {
+            throw new IllegalStateException("game already has a winner");
         }
     }
 
