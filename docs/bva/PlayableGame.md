@@ -141,3 +141,50 @@ Boundary inputs:
 - **TC25: Position outside board rejected** ( :white_check_mark: )
     - **State**: `position = -1` or `position = 19`.
     - **Expected output**: throws `IllegalArgumentException`.
+
+## Integration boundaries (PlayableGameIntegrationTest)
+
+These cases exercise the composed flow `GameSetup` → `Game` → `PlayableGame`
+end-to-end with no direct construction of intermediate state. Inputs are the
+seeded random source used by `GameSetup`, the player registration list, and the
+sequence of public `PlayableGame` calls. The boundary classes below partition
+the integration surface; one positive case and one negative case are taken per
+class where applicable.
+
+- **IT1: Production roll distributes resources across the full setup → playable
+  composition** ( :white_check_mark: )
+    - **State**: 3 players registered against a `GameSetup(new Random(42))`;
+      `PlayableGame.start` invoked on the built game; dice rolled to the token
+      value of a hex owned by the current player at startup.
+    - **Expected output**: the current player's inventory gains exactly 1 unit
+      of the terrain's mapped `ResourceType`; players who do not own a matching
+      hex gain nothing.
+
+- **IT2: Settlement build consumes the exact cost and increments victory
+  points** ( :white_check_mark: )
+    - **State**: current player has exactly one of each of LUMBER, BRICK, WOOL,
+      and GRAIN (the canonical settlement cost); an unoccupied non-desert
+      position exists on the seeded board.
+    - **Expected output**: after the build, inventory totals drop to zero,
+      `ownerOf(position)` returns the current player, and `victoryPoints`
+      increases by 1 from the starting value of 1.
+
+- **IT3: Turn order cycles through every registered player and wraps** ( :white_check_mark: )
+    - **State**: N registered players, `endTurn` invoked N times.
+    - **Expected output**: after N invocations the current player equals
+      `players().get(0)`; the intermediate sequence matches the registration
+      order exactly.
+
+- **IT4: Victory at ten points is reached through legal builds and locks the
+  game** ( :white_check_mark: )
+    - **State**: current player drives victory points to 10 through repeated
+      settlement builds (with the canonical cost supplied per build).
+    - **Expected output**: `hasWinner()` is true, `winner()` returns the current
+      player, and `winningPoints()` is 10.
+
+- **IT5: Every state-changing action is rejected once the game has a winner**
+  ( :white_check_mark: )
+    - **State**: a player has already reached 10 victory points.
+    - **Expected output**: `rollDice(1,1)`, `buildSettlement(...)`,
+      `buyDevelopmentCard()`, and `endTurn()` all throw
+      `IllegalStateException` with no observable state change.
