@@ -77,13 +77,30 @@ Boundary inputs:
     - **Expected output**: drawing the Victory Point card increases that
       player's victory points by 1.
 
+## Method under test: `hasWinner()` / `winner()` / `winningPoints()`
+
+- **TC13: New game has no winner** ( :white_check_mark: )
+    - **State**: valid game immediately after `start`.
+    - **Expected output**: `hasWinner()` is false, `winner()` is empty, and
+      `winningPoints()` is 10.
+
+- **TC14: Player wins at ten victory points** ( :white_check_mark: )
+    - **State**: current player builds settlements until reaching 10 points.
+    - **Expected output**: `hasWinner()` is true and `winner()` returns the
+      current player.
+
+- **TC15: Actions after win rejected** ( :white_check_mark: )
+    - **State**: a player has already reached 10 victory points.
+    - **Expected output**: rolling, building, buying a development card, and
+      ending the turn throw `IllegalStateException`.
+
 ## Method under test: `inventory(Player)` / `victoryPoints(Player)` /
 `ownedHexes(Player)` / `ownerOf(int)`
 
-- **TC13: Unknown player rejected** ( :white_check_mark: )
+- **TC16: Unknown player rejected** ( :white_check_mark: )
     - **State**: player not in this game.
     - **Expected output**: throws `IllegalArgumentException`.
 
-- **TC14: Position outside board rejected** ( :white_check_mark: )
+- **TC17: Position outside board rejected** ( :white_check_mark: )
     - **State**: `position = -1` or `position = 19`.
     - **Expected output**: throws `IllegalArgumentException`.
