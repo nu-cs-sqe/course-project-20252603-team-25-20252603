@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -44,11 +45,18 @@ public final class BoardFrame extends JFrame {
     private final JLabel currentPlayerLabel = new JLabel();
     private final JLabel victoryLabel = new JLabel();
     private final JLabel winnerLabel = new JLabel();
+    private final JLabel developmentStatusLabel = new JLabel();
     private final JLabel inventoryLabel = new JLabel();
     private final JTextArea boardText = new JTextArea(TEXT_ROWS, TEXT_COLUMNS);
     private final StringBuilder logHistory = new StringBuilder();
     private final JSpinner positionSpinner =
         new JSpinner(new SpinnerNumberModel(0, 0, 18, 1));
+    private final JComboBox<ResourceType> monopolyChoice =
+        new JComboBox<>(ResourceType.values());
+    private final JComboBox<ResourceType> plentyFirstChoice =
+        new JComboBox<>(ResourceType.values());
+    private final JComboBox<ResourceType> plentySecondChoice =
+        new JComboBox<>(ResourceType.values());
 
     /**
      * Builds the frame. Construct on the Swing event-dispatch thread.
@@ -85,12 +93,13 @@ public final class BoardFrame extends JFrame {
         panel.add(currentPlayerLabel);
         panel.add(victoryLabel);
         panel.add(winnerLabel);
+        panel.add(developmentStatusLabel);
         panel.add(inventoryLabel);
         return panel;
     }
 
     private JPanel buildControlPanel() {
-        JPanel panel = new JPanel(new GridLayout(1, 0, LAYOUT_GAP, LAYOUT_GAP));
+        JPanel panel = new JPanel(new GridLayout(0, 4, LAYOUT_GAP, LAYOUT_GAP));
         JButton roll = new JButton(localeManager.get("board.roll"));
         roll.addActionListener(event -> rollDice());
         panel.add(roll);
@@ -99,6 +108,12 @@ public final class BoardFrame extends JFrame {
         JButton build = new JButton(localeManager.get("board.build"));
         build.addActionListener(event -> buildSettlement());
         panel.add(build);
+        panel.add(new JLabel(localeManager.get("board.monopolyChoice")));
+        panel.add(monopolyChoice);
+        panel.add(new JLabel(localeManager.get("board.plentyFirst")));
+        panel.add(plentyFirstChoice);
+        panel.add(new JLabel(localeManager.get("board.plentySecond")));
+        panel.add(plentySecondChoice);
         JButton buyCard = new JButton(localeManager.get("board.buyDevCard"));
         buyCard.addActionListener(event -> buyDevelopmentCard());
         panel.add(buyCard);
@@ -139,7 +154,10 @@ public final class BoardFrame extends JFrame {
 
     private void buyDevelopmentCard() {
         try {
-            DevelopmentCard card = playableGame.buyDevelopmentCard();
+            DevelopmentCard card = playableGame.buyDevelopmentCard(
+                (ResourceType) monopolyChoice.getSelectedItem(),
+                (ResourceType) plentyFirstChoice.getSelectedItem(),
+                (ResourceType) plentySecondChoice.getSelectedItem());
             appendLog(localeManager.get("board.log.card", card.getType().name()));
             appendWinLogIfNeeded();
         } catch (IllegalStateException exception) {
@@ -169,6 +187,11 @@ public final class BoardFrame extends JFrame {
         winnerLabel.setText(playableGame.winner()
             .map(player -> localeManager.get("board.winner", player.getName()))
             .orElse(localeManager.get("board.winningPoints", playableGame.winningPoints())));
+        developmentStatusLabel.setText(localeManager.get(
+            "board.developmentStatus",
+            playableGame.knightsPlayed(current),
+            playableGame.roadCount(current),
+            playableGame.largestArmyHolder().map(Player::getName).orElse("-")));
         ResourceInventory inventory = playableGame.inventory(current);
         Map<ResourceType, Integer> resources = inventory.snapshot();
         inventoryLabel.setText(localeManager.get(

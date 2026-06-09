@@ -35,6 +35,9 @@ public final class PlayableGame {
     private final Map<Player, ResourceInventory> inventories = new HashMap<>();
     private final Map<Integer, Player> settlementOwners = new HashMap<>();
     private final Map<Player, Integer> victoryPoints = new HashMap<>();
+    private final Map<Player, Integer> knightsPlayed = new HashMap<>();
+    private final Map<Player, Integer> roadCounts = new HashMap<>();
+    private Player largestArmyHolder;
 
     private PlayableGame(Game game) {
         this.game = game;
@@ -117,14 +120,79 @@ public final class PlayableGame {
      * @throws IllegalStateException if the current player cannot pay the cost
      */
     public DevelopmentCard buyDevelopmentCard() {
+        return buyDevelopmentCard(ResourceType.BRICK, ResourceType.ORE, ResourceType.GRAIN);
+    }
+
+    /**
+     * Buys, draws, and applies one development card using the supplied resource
+     * choices for Monopoly and Year of Plenty effects.
+     *
+     * @param monopolyChoice resource to collect if the drawn card is Monopoly
+     * @param plentyFirst    first resource if the drawn card is Year of Plenty
+     * @param plentySecond   second resource if the drawn card is Year of Plenty
+     * @return drawn development card
+     * @throws IllegalStateException if the current player cannot pay the cost
+     */
+    public DevelopmentCard buyDevelopmentCard(
+            ResourceType monopolyChoice,
+            ResourceType plentyFirst,
+            ResourceType plentySecond) {
         rejectIfGameOver();
         Player player = currentPlayer();
         inventories.get(player).spend(DEVELOPMENT_CARD_COST);
         DevelopmentCard card = game.deck().draw();
-        if (card.getType() == DevelopmentCardType.VICTORY_POINT) {
-            victoryPoints.put(player, victoryPoints.get(player) + 1);
-        }
+        applyDevelopmentCard(card, monopolyChoice, plentyFirst, plentySecond);
         return card;
+    }
+
+    /**
+     * Applies a development card to the current player. Cards with resource
+     * choices use default selections.
+     *
+     * @param card non-null card to apply
+     */
+    public void applyDevelopmentCard(DevelopmentCard card) {
+        applyDevelopmentCard(card, ResourceType.BRICK, ResourceType.ORE, ResourceType.GRAIN);
+    }
+
+    /**
+     * Applies a development card to the current player.
+     *
+     * @param card           non-null card to apply
+     * @param monopolyChoice resource to collect for Monopoly
+     * @param plentyFirst    first resource for Year of Plenty
+     * @param plentySecond   second resource for Year of Plenty
+     * @throws NullPointerException if {@code card} is null, or if a choice
+     *                              required by the card type is null
+     */
+    public void applyDevelopmentCard(
+            DevelopmentCard card,
+            ResourceType monopolyChoice,
+            ResourceType plentyFirst,
+            ResourceType plentySecond) {
+        Objects.requireNonNull(card, "card must not be null");
+        switch (card.getType()) {
+            case KNIGHT:
+                applyKnight();
+                break;
+            case VICTORY_POINT:
+                addVictoryPoints(currentPlayer(), 1);
+                break;
+            case ROAD_BUILDING:
+                addRoads(currentPlayer(), 2);
+                break;
+            case MONOPOLY:
+                applyMonopoly(Objects.requireNonNull(
+                    monopolyChoice, "monopolyChoice must not be null"));
+                break;
+            case YEAR_OF_PLENTY:
+                applyYearOfPlenty(
+                    Objects.requireNonNull(plentyFirst, "plentyFirst must not be null"),
+                    Objects.requireNonNull(plentySecond, "plentySecond must not be null"));
+                break;
+            default:
+                throw new IllegalArgumentException("unsupported card type: " + card.getType());
+        }
     }
 
     /**
@@ -190,6 +258,37 @@ public final class PlayableGame {
         return victoryPoints.get(player);
     }
 
+    /**
+     * Returns how many Knight cards the player has played.
+     *
+     * @param player player in this game
+     * @throws IllegalArgumentException if {@code player} is not in this game
+     */
+    public int knightsPlayed(Player player) {
+        requireKnownPlayer(player);
+        return knightsPlayed.get(player);
+    }
+
+    /**
+     * Returns the number of roads credited to the player.
+     *
+     * @param player player in this game
+     * @throws IllegalArgumentException if {@code player} is not in this game
+     */
+    public int roadCount(Player player) {
+        requireKnownPlayer(player);
+        return roadCounts.get(player);
+    }
+
+    /**
+     * Returns the holder of Largest Army, if any.
+     *
+     * @return player with Largest Army, or empty before the bonus is awarded
+     */
+    public Optional<Player> largestArmyHolder() {
+        return Optional.ofNullable(largestArmyHolder);
+    }
+
     public int winningPoints() {
         return WINNING_POINTS;
     }
@@ -221,6 +320,8 @@ public final class PlayableGame {
         for (Player player : game.players()) {
             inventories.put(player, new ResourceInventory());
             victoryPoints.put(player, 0);
+            knightsPlayed.put(player, 0);
+            roadCounts.put(player, 0);
         }
     }
 
@@ -232,7 +333,7 @@ public final class PlayableGame {
             }
             Player player = game.players().get(playerIndex);
             settlementOwners.put(hex.getPosition(), player);
-            victoryPoints.put(player, victoryPoints.get(player) + 1);
+            addVictoryPoints(player, 1);
             playerIndex++;
             if (playerIndex == game.players().size()) {
                 return;
@@ -275,6 +376,60 @@ public final class PlayableGame {
         if (hasWinner()) {
             throw new IllegalStateException("game already has a winner");
         }
+    }
+
+    private void addVictoryPoints(Player player, int points) {
+        victoryPoints.put(player, victoryPoints.get(player) + points);
+    }
+
+    private void applyKnight() {
+        Player player = currentPlayer();
+        knightsPlayed.put(player, knightsPlayed.get(player) + 1);
+        updateLargestArmy(player);
+    }
+
+    private void updateLargestArmy(Player candidate) {
+        if (knightsPlayed.get(candidate) < 3) {
+            return;
+        }
+        if (largestArmyHolder == null) {
+            largestArmyHolder = candidate;
+            addVictoryPoints(candidate, 2);
+            return;
+        }
+        if (!largestArmyHolder.equals(candidate)
+                && knightsPlayed.get(candidate) > knightsPlayed.get(largestArmyHolder)) {
+            addVictoryPoints(largestArmyHolder, -2);
+            largestArmyHolder = candidate;
+            addVictoryPoints(candidate, 2);
+        }
+    }
+
+    private void addRoads(Player player, int count) {
+        roadCounts.put(player, roadCounts.get(player) + count);
+    }
+
+    private void applyMonopoly(ResourceType resource) {
+        Player player = currentPlayer();
+        int collected = 0;
+        for (Player other : game.players()) {
+            if (other.equals(player)) {
+                continue;
+            }
+            ResourceInventory inventory = inventories.get(other);
+            int amount = inventory.count(resource);
+            if (amount > 0) {
+                inventory.spend(Collections.singletonMap(resource, amount));
+                collected += amount;
+            }
+        }
+        inventories.get(player).add(resource, collected);
+    }
+
+    private void applyYearOfPlenty(ResourceType first, ResourceType second) {
+        ResourceInventory inventory = inventories.get(currentPlayer());
+        inventory.add(first, 1);
+        inventory.add(second, 1);
     }
 
     private static Map<ResourceType, Integer> settlementCost() {

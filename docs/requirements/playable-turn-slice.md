@@ -17,8 +17,11 @@ CATAN loop for the D rubric.
 - Track victory points from settlements.
 - Let the current player buy a development card by paying 1 ore, 1 wool, and
   1 grain.
-- Fully implement the Victory Point development card: when drawn, it immediately
-  adds 1 victory point to the current player.
+- Fully implement all development card types in the simplified play model:
+  Knight tracks army size and Largest Army, Victory Point adds 1 point,
+  Road Building adds 2 roads to the player's road count, Monopoly transfers
+  all of the selected resource from other players, and Year of Plenty grants
+  two selected resources.
 - End the game when a player reaches 10 victory points.
 - Let the current player end their turn and pass play to the next player.
 
@@ -31,7 +34,6 @@ This slice is intentionally smaller than full CATAN. It does not yet implement:
 - Cities.
 - Trading.
 - Robber movement after rolling 7.
-- Knight, Road Building, Monopoly, or Year of Plenty effects.
-- Longest Road or Largest Army.
+- Longest Road.
 
 Those remaining items are needed for C/B/A-level product-completion targets.
