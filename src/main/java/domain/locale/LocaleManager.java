@@ -178,7 +178,10 @@ public final class LocaleManager {
         throw new IllegalStateException(NO_BUNDLES_MESSAGE);
     }
 
-    private static boolean containsAnyBundle(Path dir) throws IOException {
+    // Package-private so the non-directory short-circuit (which the discovery
+    // loop relies on when the classpath exposes both file and directory URLs)
+    // can be exercised directly from tests.
+    static boolean containsAnyBundle(Path dir) throws IOException {
         if (!Files.isDirectory(dir)) {
             return false;
         }
