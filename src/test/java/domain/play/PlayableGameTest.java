@@ -407,6 +407,30 @@ class PlayableGameTest {
     }
 
     @Test
+    void tc33_diceFacesExactlyAtBothBoundsAccepted() {
+        PlayableGame playable = PlayableGame.start(game());
+
+        assertAll(
+            () -> assertDoesNotThrow(() -> playable.rollDice(1, 1)),
+            () -> assertDoesNotThrow(() -> playable.rollDice(6, 6))
+        );
+    }
+
+    @Test
+    void tc34_buildSettlementOutsideBoardRejectedWithIllegalArgument() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+        giveSettlementCost(playable.inventory(current));
+
+        assertAll(
+            () -> assertThrows(IllegalArgumentException.class,
+                () -> playable.buildSettlement(-1)),
+            () -> assertThrows(IllegalArgumentException.class,
+                () -> playable.buildSettlement(19))
+        );
+    }
+
+    @Test
     void tc30_ownedHexesAreSortedWhenInsertionOrderIsNonMonotonic() {
         PlayableGame playable = PlayableGame.start(game());
         Player current = playable.currentPlayer();
