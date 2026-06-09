@@ -182,7 +182,7 @@ class where applicable.
     - **Expected output**: `hasWinner()` is true, `winner()` returns the current
       player, and `winningPoints()` is 10.
 
-- **IT5: Every state-changing action is rejected after the game has a winner**
+- **IT5: Every state-changing action is rejected once the game has a winner**
   ( :white_check_mark: )
     - **State**: a player has already reached 10 victory points.
     - **Expected output**: `rollDice(1,1)`, `buildSettlement(...)`,
