@@ -151,7 +151,121 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc13_newGameHasNoWinner() {
+    void tc13_nullDevelopmentCardRejected() {
+        PlayableGame playable = PlayableGame.start(game());
+
+        assertThrows(NullPointerException.class,
+            () -> playable.applyDevelopmentCard(
+                null,
+                ResourceType.BRICK,
+                ResourceType.ORE,
+                ResourceType.GRAIN));
+    }
+
+    @Test
+    void tc14_knightIncrementsArmyCount() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+
+        playable.applyDevelopmentCard(card(DevelopmentCardType.KNIGHT));
+
+        assertEquals(1, playable.knightsPlayed(current));
+    }
+
+    @Test
+    void tc15_largestArmyAwardedAtThreeKnights() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+
+        playable.applyDevelopmentCard(card(DevelopmentCardType.KNIGHT));
+        playable.applyDevelopmentCard(card(DevelopmentCardType.KNIGHT));
+        playable.applyDevelopmentCard(card(DevelopmentCardType.KNIGHT));
+
+        assertAll(
+            () -> assertEquals(Optional.of(current), playable.largestArmyHolder()),
+            () -> assertEquals(3, playable.victoryPoints(current))
+        );
+    }
+
+    @Test
+    void tc16_roadBuildingAddsTwoRoads() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+
+        playable.applyDevelopmentCard(card(DevelopmentCardType.ROAD_BUILDING));
+
+        assertEquals(2, playable.roadCount(current));
+    }
+
+    @Test
+    void tc17_monopolyTransfersSelectedResource() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+        playable.endTurn();
+        playable.inventory(playable.currentPlayer()).add(ResourceType.BRICK, 2);
+        playable.endTurn();
+        playable.inventory(playable.currentPlayer()).add(ResourceType.BRICK, 1);
+        playable.endTurn();
+
+        playable.applyDevelopmentCard(
+            card(DevelopmentCardType.MONOPOLY),
+            ResourceType.BRICK,
+            ResourceType.ORE,
+            ResourceType.GRAIN);
+
+        assertAll(
+            () -> assertEquals(3, playable.inventory(current).count(ResourceType.BRICK)),
+            () -> playable.game().players().stream()
+                .filter(player -> !player.equals(current))
+                .forEach(player -> assertEquals(
+                    0,
+                    playable.inventory(player).count(ResourceType.BRICK)))
+        );
+    }
+
+    @Test
+    void tc18_monopolyNullChoiceRejected() {
+        PlayableGame playable = PlayableGame.start(game());
+
+        assertThrows(NullPointerException.class,
+            () -> playable.applyDevelopmentCard(
+                card(DevelopmentCardType.MONOPOLY),
+                null,
+                ResourceType.ORE,
+                ResourceType.GRAIN));
+    }
+
+    @Test
+    void tc19_yearOfPlentyGrantsSelectedResources() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+
+        playable.applyDevelopmentCard(
+            card(DevelopmentCardType.YEAR_OF_PLENTY),
+            ResourceType.BRICK,
+            ResourceType.ORE,
+            ResourceType.GRAIN);
+
+        assertAll(
+            () -> assertEquals(1, playable.inventory(current).count(ResourceType.ORE)),
+            () -> assertEquals(1, playable.inventory(current).count(ResourceType.GRAIN))
+        );
+    }
+
+    @Test
+    void tc20_yearOfPlentyNullChoiceRejected() {
+        PlayableGame playable = PlayableGame.start(game());
+
+        assertThrows(NullPointerException.class,
+            () -> playable.applyDevelopmentCard(
+                card(DevelopmentCardType.YEAR_OF_PLENTY),
+                ResourceType.BRICK,
+                ResourceType.ORE,
+                null));
+    }
+
+    @Test
+    void tc21_newGameHasNoWinner() {
         PlayableGame playable = PlayableGame.start(game());
 
         assertAll(
@@ -162,7 +276,7 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc14_playerWinsAtTenVictoryPoints() {
+    void tc22_playerWinsAtTenVictoryPoints() {
         PlayableGame playable = PlayableGame.start(game());
         Player current = playable.currentPlayer();
 
@@ -176,7 +290,7 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc15_actionsAfterWinRejected() {
+    void tc23_actionsAfterWinRejected() {
         PlayableGame playable = PlayableGame.start(game());
         buildUntilWin(playable);
 
@@ -189,7 +303,7 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc16_unknownPlayerRejected() {
+    void tc24_unknownPlayerRejected() {
         PlayableGame playable = PlayableGame.start(game());
         Player unknown = new Player("Nope", PlayerColor.ORANGE);
 
@@ -197,7 +311,7 @@ class PlayableGameTest {
     }
 
     @Test
-    void tc17_positionOutsideBoardRejected() {
+    void tc25_positionOutsideBoardRejected() {
         PlayableGame playable = PlayableGame.start(game());
 
         assertAll(
@@ -214,6 +328,10 @@ class PlayableGameTest {
             new PlayerRegistration("Arjun", PlayerColor.WHITE)
         ));
         return setup.build();
+    }
+
+    private static DevelopmentCard card(DevelopmentCardType type) {
+        return new DevelopmentCard(type);
     }
 
     private static int dieOne(int sum) {

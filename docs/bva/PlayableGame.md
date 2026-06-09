@@ -77,19 +77,56 @@ Boundary inputs:
     - **Expected output**: drawing the Victory Point card increases that
       player's victory points by 1.
 
+## Method under test: `applyDevelopmentCard(DevelopmentCard, ResourceType, ResourceType, ResourceType)`
+
+- **TC13: Null development card rejected** ( :white_check_mark: )
+    - **State**: `card = null`.
+    - **Expected output**: throws `NullPointerException`.
+
+- **TC14: Knight increments army count** ( :white_check_mark: )
+    - **State**: current player applies one `KNIGHT`.
+    - **Expected output**: that player's knight count increases by 1.
+
+- **TC15: Largest Army awarded at three knights** ( :white_check_mark: )
+    - **State**: current player applies three `KNIGHT` cards.
+    - **Expected output**: current player is largest army holder and gains
+      the 2-point bonus.
+
+- **TC16: Road Building adds two roads** ( :white_check_mark: )
+    - **State**: current player applies one `ROAD_BUILDING`.
+    - **Expected output**: that player's road count increases by 2.
+
+- **TC17: Monopoly transfers selected resource** ( :white_check_mark: )
+    - **State**: other players hold brick; current player applies `MONOPOLY`
+      choosing brick.
+    - **Expected output**: other players lose all brick and current player
+      gains the total.
+
+- **TC18: Monopoly null choice rejected** ( :white_check_mark: )
+    - **State**: current player applies `MONOPOLY` with null resource choice.
+    - **Expected output**: throws `NullPointerException`.
+
+- **TC19: Year of Plenty grants selected resources** ( :white_check_mark: )
+    - **State**: current player applies `YEAR_OF_PLENTY` choosing ore and grain.
+    - **Expected output**: current player gains 1 ore and 1 grain.
+
+- **TC20: Year of Plenty null choice rejected** ( :white_check_mark: )
+    - **State**: current player applies `YEAR_OF_PLENTY` with one null choice.
+    - **Expected output**: throws `NullPointerException`.
+
 ## Method under test: `hasWinner()` / `winner()` / `winningPoints()`
 
-- **TC13: New game has no winner** ( :white_check_mark: )
+- **TC21: New game has no winner** ( :white_check_mark: )
     - **State**: valid game immediately after `start`.
     - **Expected output**: `hasWinner()` is false, `winner()` is empty, and
       `winningPoints()` is 10.
 
-- **TC14: Player wins at ten victory points** ( :white_check_mark: )
+- **TC22: Player wins at ten victory points** ( :white_check_mark: )
     - **State**: current player builds settlements until reaching 10 points.
     - **Expected output**: `hasWinner()` is true and `winner()` returns the
       current player.
 
-- **TC15: Actions after win rejected** ( :white_check_mark: )
+- **TC23: Actions after win rejected** ( :white_check_mark: )
     - **State**: a player has already reached 10 victory points.
     - **Expected output**: rolling, building, buying a development card, and
       ending the turn throw `IllegalStateException`.
@@ -97,10 +134,10 @@ Boundary inputs:
 ## Method under test: `inventory(Player)` / `victoryPoints(Player)` /
 `ownedHexes(Player)` / `ownerOf(int)`
 
-- **TC16: Unknown player rejected** ( :white_check_mark: )
+- **TC24: Unknown player rejected** ( :white_check_mark: )
     - **State**: player not in this game.
     - **Expected output**: throws `IllegalArgumentException`.
 
-- **TC17: Position outside board rejected** ( :white_check_mark: )
+- **TC25: Position outside board rejected** ( :white_check_mark: )
     - **State**: `position = -1` or `position = 19`.
     - **Expected output**: throws `IllegalArgumentException`.
