@@ -98,3 +98,17 @@ Boundary inputs:
       `"Player 1 name:"`.
 
 - **TC17: Zero args delegates to plain get** ( implemented in TC12 )
+
+## Method under test: `containsAnyBundle(Path)` (package-private; called from `discoverDefaultBundleDir` during `getInstance`)
+
+`containsAnyBundle` is the defensive guard that lets the classpath scanner
+skip non-directory file URLs when discovering the bundle root. The classpath
+typically only exposes directory roots, so this branch needs an explicit
+boundary test to be exercised.
+
+- **TC18: Non-directory path reports no bundles** ( :white_check_mark: )
+    - **State**: a path that exists as a regular file (not a directory),
+      regardless of name.
+    - **Expected output**: `containsAnyBundle(path)` returns `false`, so the
+      classpath scanner continues to the next root instead of attempting to
+      load bundles from a non-directory.
