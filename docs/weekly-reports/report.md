@@ -1,3 +1,74 @@
+# Final A-Rubric Push (06/08/2026-06/10/2026)
+
+**Theme**: Finish the code-quality and evidence items needed to make the team
+grade defensible against the A rubric. The remaining work was not a new game
+feature sprint; it was a verification sprint focused on playable completion,
+integration evidence, mutation testing, cyclomatic coverage, Clean Code
+evidence, and process documentation.
+
+**Decisions made this week**:
+- Keep the CATAN rules model intentionally scoped to the simplified playable
+  version already in the codebase: hex ownership, resource production,
+  development-card effects, Largest Army, and 10-point victory. Full
+  vertex/edge roads, ports, trading, robber-on-seven, and cities are future
+  work, not required for the current rubric evidence.
+- Scope Jacoco and PIT to non-GUI/non-enum domain code, matching the grading
+  rubric's quality target. UI code remains covered by style checks and manual
+  review, while domain behavior carries the quantitative coverage evidence.
+- Treat one PIT survivor as an equivalent mutant only after writing a concrete
+  explanation: Monopoly changing `amount > 0` to `amount >= 0` is
+  observationally identical because zero-cost `spend` and `collected += 0` are
+  both no-ops.
+- Use package-private seams only where they make otherwise hard-to-reach
+  branches testable without widening UI-facing APIs or adding inheritance
+  hooks.
+
+**Planning and Progress Tracking**:
+1. [done] All: Make the game playable through a board UI: setup, board display,
+   turn advancement, dice rolling, resource production, settlement building,
+   development-card buying, and 10-point winner display. Merged PRs #33-#35.
+2. [done] All: Add integration coverage for the playable flow in addition to
+   existing Game Setup and Locale integration tests. Merged PR #37.
+3. [done] All: Configure domain-only Jacoco/PIT scope and add mutation-focused
+   tests. Merged PR #36.
+4. [done] All: Clean up remaining non-equivalent PIT mutants and document the
+   single equivalent Monopoly mutant. Merged PR #38.
+5. [done] All: Close Jacoco cyclomatic coverage gaps for the filtered
+   non-GUI/non-enum domain scope. Merged PR #39.
+6. [done] All: Record Clean Code standards and instructor feedback responses in
+   `docs/clean-code-review.md`.
+7. [done] All: Audit process evidence in `docs/project-board.md` and this
+   weekly report.
+
+**Current quality evidence**:
+- `./gradlew clean check` passes on the latest quality branch.
+- `./gradlew integrationTest` passes on the latest quality branch.
+- Jacoco instruction coverage for filtered domain code: 100%.
+- Jacoco missed complexity for filtered domain code: 0.
+- PIT effective non-equivalent mutation score: 100%.
+- Checkstyle and SpotBugs are part of `./gradlew check` and CI.
+
+**Process audit**:
+- CI is checked in at `.github/workflows/main.yml` and runs `./gradlew check`
+  for pushes and pull requests targeting `main`.
+- Instructor Week 4 feedback recorded branch protection and required Gradle
+  checks as correctly configured at that time.
+- Final manual check before submission: re-open GitHub settings and confirm
+  `main` still blocks direct pushes, requires PR approval, and requires the
+  Gradle Build status check.
+
+**Risks / Notes**:
+- The code now satisfies the quantitative B-level quality targets for
+  non-GUI/non-enum domain code, but branch protection and project-board status
+  are live GitHub settings. They must be rechecked in the browser before final
+  submission because local files cannot prove their current state.
+- Full official CATAN rules such as roads on edges, Longest Road, ports,
+  trading, cities, and robber-on-seven remain future extensions. The submitted
+  product should be described as the simplified playable CATAN model implemented
+  by the current domain.
+
+---
+
 # Carry-over assignments (Game Setup — unowned work split, May 2026)
 
 Tasks below were previously unassigned or marked **All**. Status reflects `main`
