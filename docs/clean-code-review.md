@@ -94,8 +94,10 @@ Single responsibility per class: board construction (`Board`), deck
 (`GameSetup`), play rules (`PlayableGame`), localization (`LocaleManager`).
 Classes are `final` with package-private seams for tests rather than
 inheritance hooks. The locale subsystem follows the Open-Closed Principle:
-new languages are added without modifying any existing class (see
-[`docs/i18n.md`](i18n.md)).
+English, Spanish, and Mandarin bundles are discovered from
+`src/main/resources/messages_*.properties`, so new languages are added as
+resource files without modifying existing Java code. The architecture is
+documented in [`docs/design/README.md`](design/README.md).
 
 ## Response to instructor code review (Week 7)
 
@@ -106,3 +108,26 @@ new languages are added without modifying any existing class (see
    (`PlayableGame`, `DevelopmentCardDeck`, `LocaleManager`, `GameSetup`) now
    carry consistent Javadoc including `@throws` clauses; the policy itself is
    documented in `checkstyle.xml` so it survives the team.
+
+## Final Review Evidence
+
+This branch records the Clean Code evidence after the A-rubric quality branches
+landed on `main`:
+
+- **Playable flow kept cohesive**: `PlayableGame` owns play rules only; board
+  generation, setup validation, turn rotation, resource accounting, deck
+  behavior, and localization remain separate domain classes.
+- **Test seams are narrow**: package-private seams in `LocaleManager` exist to
+  exercise classpath discovery and I/O failure branches without exposing them
+  to UI code or subclassing production classes.
+- **No dead validation code**: unreachable defensive branches were removed or
+  documented where the domain model makes them impossible. One exhaustive enum
+  switch uses a targeted Checkstyle suppression instead of reintroducing a
+  meaningless default branch.
+- **Traceable quality evidence**: every new branch test added for mutation or
+  cyclomatic coverage has a matching BVA row, and
+  `docs/testing/mutation-coverage.md` records the current non-GUI/non-enum
+  metrics.
+- **Current local verification**: the latest quality branch reports
+  `./gradlew clean check` passing, 100% Jacoco instruction coverage, 0 missed
+  Jacoco complexity, and 100% effective non-equivalent PIT mutation coverage.
