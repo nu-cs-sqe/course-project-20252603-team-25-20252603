@@ -33,6 +33,10 @@ tasks.compileJava {
     options.release = 11
 }
 
+tasks.withType<JavaCompile>().configureEach {
+    options.encoding = "UTF-8"
+}
+
 tasks.test {
     useJUnitPlatform()
 }
