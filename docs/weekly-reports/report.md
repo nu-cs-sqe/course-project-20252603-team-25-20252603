@@ -1,71 +1,37 @@
-# Final A-Rubric Push (06/08/2026-06/10/2026)
+# Final week (06/08/2026-06/10/2026)
 
-**Theme**: Finish the code-quality and evidence items needed to make the team
-grade defensible against the A rubric. The remaining work was not a new game
-feature sprint; it was a verification sprint focused on playable completion,
-integration evidence, mutation testing, cyclomatic coverage, Clean Code
-evidence, and process documentation.
+**What we focused on**: Finish the playable game, lock down test/coverage numbers,
+write up Clean Code responses, and clean docs before submission.
 
-**Decisions made this week**:
-- Keep the CATAN rules model intentionally scoped to the simplified playable
-  version already in the codebase: hex ownership, resource production,
-  development-card effects, Largest Army, and 10-point victory. Full
-  vertex/edge roads, ports, trading, robber-on-seven, and cities are future
-  work, not required for the current rubric evidence.
-- Scope Jacoco and PIT to non-GUI/non-enum domain code, matching the grading
-  rubric's quality target. UI code remains covered by style checks and manual
-  review, while domain behavior carries the quantitative coverage evidence.
-- Treat one PIT survivor as an equivalent mutant only after writing a concrete
-  explanation: Monopoly changing `amount > 0` to `amount >= 0` is
-  observationally identical because zero-cost `spend` and `collected += 0` are
-  both no-ops.
-- Use package-private seams only where they make otherwise hard-to-reach
-  branches testable without widening UI-facing APIs or adding inheritance
-  hooks.
+**Decisions**:
+- We kept our simplified CATAN rules (hex ownership, dice production, dev cards,
+  Largest Army, first to 10 VP). Full roads, ports, trading, robber-on-7, and
+  cities are out of scope for what we shipped.
+- Jacoco and PIT only score `domain` code — not Swing or bare enums — since that
+  matches what the project asks us to measure.
+- PIT left one mutant alive in `PlayableGame.applyMonopoly` (`> 0` vs `>= 0`).
+  We wrote up why it is equivalent: when amount is 0, both paths do nothing.
+- We added a few package-private test hooks in `LocaleManager` instead of
+  exposing extra public API or subclassing.
 
-**Planning and Progress Tracking**:
-1. [done] All: Make the game playable through a board UI: setup, board display,
-   turn advancement, dice rolling, resource production, settlement building,
-   development-card buying, and 10-point winner display. Merged PRs #33-#35.
-2. [done] All: Add integration coverage for the playable flow in addition to
-   existing Game Setup and Locale integration tests. Merged PR #37.
-3. [done] All: Configure domain-only Jacoco/PIT scope and add mutation-focused
-   tests. Merged PR #36.
-4. [done] All: Clean up remaining non-equivalent PIT mutants and document the
-   single equivalent Monopoly mutant. Merged PR #38.
-5. [done] All: Close Jacoco cyclomatic coverage gaps for the filtered
-   non-GUI/non-enum domain scope. Merged PR #39.
-6. [done] All: Record Clean Code standards and instructor feedback responses in
-   `docs/clean-code-review.md`.
-7. [done] All: Audit process evidence in `docs/project-board.md` and this
-   weekly report.
+**Done this week**:
+1. [done] Playable board UI through win screen — PRs #33–#35
+2. [done] Playable-game integration tests — PR #37 (+ #40 full flow)
+3. [done] Domain-only Jacoco/PIT config — PR #36
+4. [done] Mutation cleanup + equivalent-mutant write-up — PR #38
+5. [done] Cyclomatic coverage gaps — PR #39
+6. [done] Clean Code doc — `docs/clean-code-review.md` (PR #43)
+7. [done] Process/board snapshot — `docs/project-board.md` (PR #44)
 
-**Current quality evidence**:
-- `./gradlew clean check` passes on the latest quality branch.
-- `./gradlew integrationTest` passes on the latest quality branch.
-- Jacoco instruction coverage for filtered domain code: 100%.
-- Jacoco missed complexity for filtered domain code: 0.
-- PIT effective non-equivalent mutation score: 100%.
-- Checkstyle and SpotBugs are part of `./gradlew check` and CI.
+**Numbers on `main` (June 10)**:
+- `./gradlew clean check` and `./gradlew integrationTest` pass
+- Domain Jacoco: 100% instructions, 0 missed complexity
+- PIT: 100% effective mutation score (1 equivalent mutant documented)
+- Checkstyle + SpotBugs clean in CI
 
-**Process audit**:
-- CI is checked in at `.github/workflows/main.yml` and runs `./gradlew check`
-  for pushes and pull requests targeting `main`.
-- Instructor Week 4 feedback recorded branch protection and required Gradle
-  checks as correctly configured at that time.
-- Final manual check before submission: re-open GitHub settings and confirm
-  `main` still blocks direct pushes, requires PR approval, and requires the
-  Gradle Build status check.
-
-**Risks / Notes**:
-- The code now satisfies the quantitative B-level quality targets for
-  non-GUI/non-enum domain code, but branch protection and project-board status
-  are live GitHub settings. They must be rechecked in the browser before final
-  submission because local files cannot prove their current state.
-- Full official CATAN rules such as roads on edges, Longest Road, ports,
-  trading, cities, and robber-on-seven remain future extensions. The submitted
-  product should be described as the simplified playable CATAN model implemented
-  by the current domain.
+**Before we submit on Canvas**:
+- Confirm GitHub still requires PR review + Gradle check on `main`
+- Describe the game as our simplified model, not full official CATAN
 
 ---
 
@@ -86,57 +52,32 @@ as of PR #30 unless noted.
 
 # Week 8 (05/18/2026-05/24/2026)
 
-**Theme**: Land the instructor's Week 7 code-review feedback. The instructor
-read every line of production code on `main` (PR #19 from 5/20) and called out
-two things to fix: (1) "your code is full of null checks", and (2) only
-`LocaleManager` had method-level Javadoc, so the rest of the codebase was
-inconsistent. Both are graded under the A-grade rubric for code standards
-(Clean Code Ch. 4 on Comments and Ch. 7 on Error Handling), so we addressed
-them on a dedicated branch before stacking more features on top.
+**Theme**: Address instructor Week 7 code review — too many null checks and
+inconsistent Javadoc.
 
-**Decisions made this week**:
-- Replace the team's `if (x == null) throw new IllegalArgumentException(...)`
-  pattern for **pure** null guards with `java.util.Objects.requireNonNull(x, msg)`.
-  That is a one-line, idiomatic-Java replacement that throws
-  `NullPointerException` (the convention modern Java picks for required
-  reference parameters). Trade-off: the affected unit tests had to switch
-  from `assertThrows(IllegalArgumentException.class, ...)` to
-  `assertThrows(NullPointerException.class, ...)` for those exact cases.
-- Keep **composite** validators as `IllegalArgumentException`. The instructor's
-  Clean Code complaint is about scattered standalone null checks, not about
-  domain rule validation. So:
-  - `Player`/`PlayerRegistration` blank-name check stays `IAE`.
-  - `NumberToken` value-range, `Hex` position-range and terrain↔token
-    coupling, `GameSetup.registerPlayers` count/uniqueness/contains-null,
-    `TurnOrder` size/uniqueness/contains-null, `Game` empty/contains-null
-    players — all stay `IAE`. Same for `LocaleManager.setActiveLocale`
-    unknown-locale.
-- Add a single-sentence summary plus a `@param/@return/@throws` block to
-  every public constructor and non-trivial public method, matching the
-  style already in `LocaleManager`. Enums and trivial accessors stay
-  comment-free; Clean Code Ch. 4 still applies (self-documenting names
-  beat redundant comments).
-- Defer one related cleanup (the `PlayerSetupFrame` private `collectRegistrations`
-  helper that returns `null` as a sentinel for "validation failed") to a
-  follow-up branch. It is also a "passing null around" smell but lives
-  inside one private method and is out of scope for this PR.
+**What we changed**:
+- Swapped standalone null guards for `Objects.requireNonNull` on required
+  constructor args (throws `NullPointerException` instead of `IAE`). Updated
+  the matching unit tests.
+- Left composite validation as `IllegalArgumentException` (blank names, bad
+  dice values, duplicate colors, etc.) — that is domain rules, not null noise.
+- Added Javadoc on public domain APIs to match `LocaleManager`.
+- Did not refactor `PlayerSetupFrame.collectRegistrations` (null sentinel) in
+  this pass — tracked as follow-up.
 
 **Planning and Progress Tracking**:
 1. [done] All: Read and discuss instructor feedback in `docs/weekly-reports/feedback-codereview.md` after merging PR #19.
 2. [done] Daniel Kim: Add class-level + method-level Javadoc to all 17 production classes (`PlayerColor`, `TerrainType`, `DevelopmentCardType`, `Player`, `PlayerRegistration`, `Hex`, `NumberToken`, `Board`, `DevelopmentCard`, `DevelopmentCardDeck`, `Game`, `GameSetup`, `TurnOrder`, `Main`, `LocaleSelectionFrame`, `PlayerSetupFrame`, `SwingLocaleSupport`). `LocaleManager` already had it.
 3. [done] Daniel Kim: Replace 14 pure-null `if-throw IAE` blocks across `Player`, `PlayerRegistration`, `Hex`, `Board`, `DevelopmentCard`, `DevelopmentCardDeck`, `Game`, `GameSetup`, `LocaleManager`, `LocaleSelectionFrame`, and `PlayerSetupFrame` with `Objects.requireNonNull`. Update the corresponding 13 unit tests to assert `NullPointerException`.
 4. [done] Daniel Wu: `PlayerSetupFrame` + wire `Main` (locale → player setup → game ready). Carry-over Task A — merged PR #21.
-5. [in progress] All: Land the Clean Code feedback PR (`chore/clean-code-feedback`) on `main`. Local `./gradlew check` passes (271 unit tests + integration tests, Checkstyle clean, SpotBugs clean, Jacoco run, Pitest 96% test strength).
-6. [ongoing] All: Code review and merges to `main`.
+5. [done] All: Land the Clean Code feedback PR (`chore/clean-code-feedback`) on `main`. Merged PR #25.
+6. [done] All: Code review and merges to `main`.
 
 **Risks / Notes**:
-- `NullPointerException` from `Objects.requireNonNull` carries the same
-  diagnostic value as the old `IllegalArgumentException("x must not be null")`
-  because both encode the parameter name in the message. No information loss.
-- Future contributors: if you add a constructor argument that must not be
-  null, use `Objects.requireNonNull(arg, "arg")`. Only fall back to
-  `if-throw IAE` when the check is composite (null *and* a range or shape
-  rule), in which case `IAE` is the right exception.
+- `requireNonNull` still puts the parameter name in the exception message, same
+  as our old `IAE` messages.
+- New code: use `requireNonNull` for required refs; use `IAE` when you are
+  checking a business rule, not just null.
 
 ---
 
@@ -169,9 +110,8 @@ the i18n architecture proves it can take a new language with no code changes.
 2. [done] Shun Fujita: `DevelopmentCardDeck`, `TurnOrder`, `GameSetup`
    orchestrator, `Game`, `PlayerRegistration` with BVA and tests, finishing the
    carry-over from Week 6 item 7. Merged PR #13.
-3. [in progress] Julian Tang: Jacoco coverage and Pitest mutation testing wired
-   into `build.gradle.kts` (commit 902fe22 on `chore/jacoco-pitest`). PR open,
-   waiting on review.
+3. [done] Julian Tang: Jacoco coverage and Pitest mutation testing wired
+   into `build.gradle.kts`. Merged with later PRs #36–#39.
 4. [done] All: Integration Testing plan documented on the project management
    board (Item 4). Covers IT-1 Game Setup happy path and IT-2 Locale selection
    end-to-end, plus negative paths.
@@ -224,9 +164,9 @@ documented BVA on every public method. Java Swing chosen for the GUI.
 3. [done] Daniel Kim: `Player` + `PlayerColor` (BVA + TDD) — merged PR #4
 4. [done] All: Checkstyle + SpotBugs setup (W3 Item 3) — merged PR #5
 5. [done] Daniel Wu: `LocaleManager` + `messages_en.properties` + `messages_es.properties` + minimal Swing locale picker (BVA + TDD) — merged PR #7, #8
-6. [not started] Julian Tang: `Board` (hex generation, terrains, number tokens) including `TerrainType`, `NumberToken`, `Hex` (BVA + TDD) — PR TBD
-7. [not started] Shun Fujita: `GameSetup` orchestrator + `TurnOrder` + `DevelopmentCardDeck` + `Game` + `PlayerRegistration` (BVA + TDD) — depends on Board — PR TBD
-8. [not started] All: Integration tests on **Game Setup** and **Locale Selection** features (rubric: ≥2 main features) — PR TBD
+6. [done] Julian Tang: `Board` + hex/token types (BVA + TDD) — merged PR #11 (Week 7).
+7. [done] Shun Fujita: `GameSetup` orchestrator + deck + turn order (BVA + TDD) — merged PR #13 (Week 7).
+8. [done] All: Integration tests on Game Setup and Locale Selection — merged PRs #28, locale IT branch.
 9. [ongoing] All: Code review + merges to `main`
 
 **Risks / Notes**:
@@ -236,16 +176,3 @@ documented BVA on every public method. Java Swing chosen for the GUI.
   newly implemented test cases.
 
 ---
-
-# Week 3 (04/13/2026-04/19/2026)
-**Planning and Progress Tracking**:
-1. [done] Person: Task (Links to PR)
-2. [not started] Person: Task (Links to PR)
-3. [80% done] Person: Task (Links to PR)
-
-
-# Week X (XX/XX/2026-XX/XX/2026) TEMPLATE (You can change the format to whatever the team likes better)
-**Planning and Progress Tracking**:
-1. [done] Person: Task (Links to PR)
-2. [not started] Person: Task (Links to PR)
-3. [80% done] Person: Task (Links to PR)

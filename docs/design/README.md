@@ -1,8 +1,8 @@
-# CATAN — Game Setup Phase Design
+# CATAN — Design Overview
 
-This document describes the classes, methods, and relationships needed to
-satisfy the requirements in `docs/requirements/game-setup.md`. It also
-specifies the locale architecture required by the rubric:
+This document describes the classes, methods, and relationships for game setup
+and the simplified playable slice. Play rules are documented in more detail in
+`docs/requirements/playable-turn-slice.md`. Locale architecture:
 
 > The code supports easily adding new locales **without changing existing code**.
 
@@ -29,19 +29,26 @@ src/main/java
 │   │   └── DevelopmentCardDeck.java
 │   ├── turn
 │   │   └── TurnOrder.java
-│   └── setup
-│       ├── GameSetup.java
-│       └── PlayerRegistration.java   (value object: name + color)
+│   ├── setup
+│   │   ├── GameSetup.java
+│   │   ├── Game.java
+│   │   └── PlayerRegistration.java
+│   └── play
+│       ├── PlayableGame.java
+│       ├── ResourceInventory.java
+│       └── ResourceType.java
 └── ui
     ├── Main.java
     └── swing
         ├── LocaleSelectionFrame.java
         ├── PlayerSetupFrame.java
-        └── BoardFrame.java           (stub for next iteration)
+        ├── BoardFrame.java
+        └── SwingLocaleSupport.java
 
 src/main/resources
 ├── messages_en.properties
-└── messages_es.properties
+├── messages_es.properties
+└── messages_zh.properties
 ```
 
 The `domain` package contains all game logic. The `ui` package only renders
@@ -54,7 +61,7 @@ us write integration tests without touching Swing.
 ## 2. Locale architecture (rubric requirement)
 
 ### Goals
-- ≥ 2 locales selectable at game start.
+- ≥ 2 locales selectable at game start (we ship English, Spanish, and Mandarin).
 - Adding a new locale = drop in `messages_<lang>.properties`. **No source
   changes, no recompilation of existing classes.**
 
@@ -267,7 +274,7 @@ Main   ▶ PlayerSetupFrame.show()
 Player ▶ enter count + per-player name/color
         PlayerSetupFrame ▶ GameSetup.registerPlayers(...)
         PlayerSetupFrame ▶ Game game = GameSetup.build()
-Main   ▶ BoardFrame.show(game)   // stub for next iteration
+Main   ▶ BoardFrame.show(game)   // playable board UI
 ```
 
 ---
