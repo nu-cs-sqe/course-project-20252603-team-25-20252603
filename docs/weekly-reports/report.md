@@ -1,37 +1,68 @@
-# Final week (06/08/2026-06/10/2026)
+# Week 10 — final (06/01/2026-06/10/2026)
 
-**What we focused on**: Finish the playable game, lock down test/coverage numbers,
-write up Clean Code responses, and clean docs before submission.
+**Theme**: Ship a playable game, hit coverage/mutation targets, and prep final
+submission docs.
 
-**Decisions**:
-- We kept our simplified CATAN rules (hex ownership, dice production, dev cards,
-  Largest Army, first to 10 VP). Full roads, ports, trading, robber-on-7, and
-  cities are out of scope for what we shipped.
-- Jacoco and PIT only score `domain` code — not Swing or bare enums — since that
-  matches what the project asks us to measure.
-- PIT left one mutant alive in `PlayableGame.applyMonopoly` (`> 0` vs `>= 0`).
-  We wrote up why it is equivalent: when amount is 0, both paths do nothing.
-- We added a few package-private test hooks in `LocaleManager` instead of
-  exposing extra public API or subclassing.
+**What we changed**:
+- Scoped play to a simplified CATAN model: hex ownership, dice production, dev
+  cards, Largest Army, first to 10 VP. Roads, ports, trading, robber-on-7, and
+  cities stay out of scope.
+- Jacoco and PIT report on `domain` code only (not Swing or bare enums).
+- Documented one equivalent PIT mutant in `PlayableGame.applyMonopoly` (`> 0` vs
+  `>= 0` when amount is zero).
+- Read instructor Week 10 rubric feedback — no issues on reviewed items
+  (`feedback-codereview.md`, merged PR #32).
 
-**Done this week**:
-1. [done] Playable board UI through win screen — PRs #33–#35
-2. [done] Playable-game integration tests — PR #37 (+ #40 full flow)
-3. [done] Domain-only Jacoco/PIT config — PR #36
-4. [done] Mutation cleanup + equivalent-mutant write-up — PR #38
-5. [done] Cyclomatic coverage gaps — PR #39
-6. [done] Clean Code doc — `docs/clean-code-review.md` (PR #43)
-7. [done] Process/board snapshot — `docs/project-board.md` (PR #44)
+**Planning and Progress Tracking**:
+1. [done] All: `PlayableGame` domain + BVA + playable `BoardFrame` — PR #33
+2. [done] All: 10-point win condition — PR #34
+3. [done] All: Development card effects in play — PR #35
+4. [done] All: Domain-only Jacoco/PIT scope + mutation tests — PR #36
+5. [done] All: Playable-game integration tests — PR #37, #40
+6. [done] All: Mutation cleanup to 100% effective score — PR #38
+7. [done] All: Cyclomatic coverage gaps closed — PR #39
+8. [done] All: UTF-8 compile encoding — PR #41
+9. [done] All: i18n write-up — `docs/i18n.md` (PR #42)
+10. [done] All: Clean Code standards doc — `docs/clean-code-review.md` (PR #43)
+11. [done] All: Process/board snapshot — `docs/project-board.md` (PR #44)
 
-**Numbers on `main` (June 10)**:
-- `./gradlew clean check` and `./gradlew integrationTest` pass
-- Domain Jacoco: 100% instructions, 0 missed complexity
-- PIT: 100% effective mutation score (1 equivalent mutant documented)
-- Checkstyle + SpotBugs clean in CI
+**Risks / Notes**:
+- On `main` (June 10): `./gradlew clean check` and `./gradlew integrationTest`
+  pass; domain Jacoco 100% / 0 missed complexity; PIT 100% effective mutation
+  score (1 equivalent mutant documented).
+- Before Canvas submit: confirm `main` still requires PR review + Gradle check;
+  describe the product as our simplified model, not full official CATAN.
 
-**Before we submit on Canvas**:
-- Confirm GitHub still requires PR review + Gradle check on `main`
-- Describe the game as our simplified model, not full official CATAN
+---
+
+# Week 9 (05/25/2026-05/31/2026)
+
+**Theme**: Finish Game Setup carry-over — full UI flow, integration tests, and
+board stub.
+
+**What we changed**:
+- Wired locale → player setup → `GameSetup.build()` in `Main` via
+  `PlayerSetupFrame`.
+- Added Mandarin as a resource-only locale (`messages_zh.properties`).
+- Expanded integration coverage for Game Setup and Locale Selection (en/es/zh
+  plus negative paths).
+- Tagged integration tests and added `./gradlew integrationTest`.
+- Replaced `BoardFrame` placeholder after setup completes.
+
+**Planning and Progress Tracking**:
+1. [done] Daniel Wu: `PlayerSetupFrame` + `Main` flow — merged PR #21
+2. [done] Daniel Wu: `messages_zh.properties` — merged PR #20
+3. [done] All: Clean Code feedback (null checks + Javadoc) — merged PR #25
+4. [done] Daniel Wu: Locale IT for en/es/zh + negative paths — merged PR #26
+5. [done] Julian Tang: `@Tag("integration")` + `integrationTest` task — merged PR #27
+6. [done] Shun Fujita: Expanded `GameSetupIntegrationTest` — merged PR #28
+7. [done] Julian Tang: `BoardFrame` stub — merged PR #29
+8. [done] All: Carry-over status in `report.md` — merged PRs #30, #31
+9. [done] All: Closed Week 4–6 feedback PRs (#1, #2, #10, #19)
+
+**Risks / Notes**:
+- Setup phase is complete on `main`; next step is playable turn logic.
+- Carry-over table below reflects final status as of PR #31.
 
 ---
 
