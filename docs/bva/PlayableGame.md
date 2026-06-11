@@ -1,8 +1,9 @@
 # BVA - `PlayableGame`
 
-`PlayableGame` wraps the completed setup `Game` with the smallest playable
-CATAN slice needed for the D rubric: starting settlements, dice production,
-settlement building, victory-point tracking, and turn advancement.
+`PlayableGame` wraps a completed setup `Game` and adds the playable slice we
+implemented: starting hex ownership, dice production, building settlements,
+buying/playing development cards, Largest Army, and reaching 10 victory points.
+This is a simplified CATAN model (hex ownership, not full roads/ports/trading).
 
 Boundary inputs:
 - `Game`: null, valid setup game.

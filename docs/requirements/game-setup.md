@@ -19,8 +19,8 @@ manually arranging hexes, number tokens, or shuffling decks.
 
 ### Acceptance Criteria
 
-- The player can select a locale (English or Spanish) before any other prompt,
-  and all subsequent prompts/messages are rendered in that locale.
+- The player can select a locale (English, Spanish, or Mandarin Chinese) before
+  any other prompt, and all subsequent prompts/messages are rendered in that locale.
 - Adding a new locale (e.g., `messages_fr.properties`) makes that locale
   available at startup **without modifying existing source code**.
 - The game must not start unless there are **3 or 4 players**.
@@ -96,7 +96,7 @@ manually arranging hexes, number tokens, or shuffling decks.
 1. System scans the classpath for `messages_*.properties` files and builds
    the list of available locales.
 2. System renders a locale selection screen showing each locale by its
-   display name (e.g., "English", "Español").
+   display name (e.g., "English", "español", "中文").
 3. Player picks a locale.
 4. System sets the active locale and resolves all subsequent UI text via
    `LocaleManager.get(key)`.
