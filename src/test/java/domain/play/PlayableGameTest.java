@@ -535,6 +535,138 @@ class PlayableGameTest {
         );
     }
 
+    @Test
+    void tc39_cityUpgradeWithExactResourcesAddsPointAndDoublesProduction() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+        Hex owned = playable.ownedHexes(current).get(0);
+        int position = owned.getPosition();
+        final int token = owned.getToken().get().getValue();
+        final ResourceType resource = ResourceType.fromTerrain(owned.getTerrain()).get();
+        giveCityCost(playable.inventory(current));
+
+        playable.buildCity(position);
+
+        assertAll(
+            () -> assertTrue(playable.isCity(position)),
+            () -> assertEquals(2, playable.victoryPoints(current)),
+            () -> assertEquals(0, playable.inventory(current).count(ResourceType.ORE)),
+            () -> assertEquals(0, playable.inventory(current).count(ResourceType.GRAIN))
+        );
+
+        int produced = playable.rollDice(dieOne(token), dieTwo(token));
+
+        assertAll(
+            () -> assertEquals(2, produced),
+            () -> assertEquals(2, playable.inventory(current).count(resource))
+        );
+    }
+
+    @Test
+    void tc40_cityUpgradeRejectedForUnownedAndAlreadyUpgradedPositions() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+        int owned = playable.ownedHexes(current).get(0).getPosition();
+        int unowned = unownedNonDesertPosition(playable);
+        giveCityCost(playable.inventory(current));
+
+        assertThrows(IllegalArgumentException.class, () -> playable.buildCity(unowned));
+
+        playable.buildCity(owned);
+
+        assertThrows(IllegalArgumentException.class, () -> playable.buildCity(owned));
+    }
+
+    @Test
+    void tc41_cityPositionBoundariesAndFalseStateAreObservable() {
+        PlayableGame playable = PlayableGame.start(game());
+        int unowned = unownedNonDesertPosition(playable);
+
+        assertAll(
+            () -> assertFalse(playable.isCity(unowned)),
+            () -> assertThrows(IllegalArgumentException.class, () -> playable.isCity(-1)),
+            () -> assertThrows(IllegalArgumentException.class, () -> playable.isCity(19)),
+            () -> assertThrows(IllegalArgumentException.class, () -> playable.buildCity(-1)),
+            () -> assertThrows(IllegalArgumentException.class, () -> playable.buildCity(19))
+        );
+    }
+
+    @Test
+    void tc42_buildCityAndRoadAfterWinRejectedBeforeOtherValidation() {
+        PlayableGame playable = PlayableGame.start(game());
+        buildUntilWin(playable);
+        giveRoadCost(playable.inventory(playable.currentPlayer()));
+
+        assertAll(
+            () -> assertThrows(IllegalStateException.class, () -> playable.buildCity(-1)),
+            () -> assertThrows(IllegalStateException.class, playable::buildRoad)
+        );
+    }
+
+    @Test
+    void tc43_buildRoadSpendsResourcesAndIncrementsRoadCount() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+        giveRoadCost(playable.inventory(current));
+
+        playable.buildRoad();
+
+        assertAll(
+            () -> assertEquals(1, playable.roadCount(current)),
+            () -> assertEquals(0, playable.inventory(current).count(ResourceType.LUMBER)),
+            () -> assertEquals(0, playable.inventory(current).count(ResourceType.BRICK))
+        );
+    }
+
+    @Test
+    void tc44_longestRoadAwardedAtExactlyFiveRoads() {
+        PlayableGame playable = PlayableGame.start(game());
+        Player current = playable.currentPlayer();
+        playRoadBuildingCards(playable, 2);
+        giveRoadCost(playable.inventory(current));
+
+        playable.buildRoad();
+
+        assertAll(
+            () -> assertEquals(5, playable.roadCount(current)),
+            () -> assertEquals(Optional.of(current), playable.longestRoadHolder()),
+            () -> assertEquals(3, playable.victoryPoints(current))
+        );
+
+        playable.applyDevelopmentCard(card(DevelopmentCardType.ROAD_BUILDING));
+
+        assertAll(
+            () -> assertEquals(7, playable.roadCount(current)),
+            () -> assertEquals(Optional.of(current), playable.longestRoadHolder()),
+            () -> assertEquals(3, playable.victoryPoints(current))
+        );
+    }
+
+    @Test
+    void tc45_longestRoadTransfersOnlyWhenExceeded() {
+        PlayableGame playable = PlayableGame.start(game());
+        final Player first = playable.currentPlayer();
+        playRoadBuildingCards(playable, 3);
+        playable.endTurn();
+        Player second = playable.currentPlayer();
+
+        playRoadBuildingCards(playable, 3);
+
+        assertAll(
+            () -> assertEquals(Optional.of(first), playable.longestRoadHolder()),
+            () -> assertEquals(3, playable.victoryPoints(first)),
+            () -> assertEquals(1, playable.victoryPoints(second))
+        );
+
+        playable.applyDevelopmentCard(card(DevelopmentCardType.ROAD_BUILDING));
+
+        assertAll(
+            () -> assertEquals(Optional.of(second), playable.longestRoadHolder()),
+            () -> assertEquals(1, playable.victoryPoints(first)),
+            () -> assertEquals(3, playable.victoryPoints(second))
+        );
+    }
+
     private static Game game() {
         GameSetup setup = new GameSetup(new Random(42));
         setup.registerPlayers(List.of(
@@ -567,6 +699,12 @@ class PlayableGameTest {
         }
     }
 
+    private static void playRoadBuildingCards(PlayableGame playable, int count) {
+        for (int i = 0; i < count; i++) {
+            playable.applyDevelopmentCard(card(DevelopmentCardType.ROAD_BUILDING));
+        }
+    }
+
     private static int unownedNonDesertPosition(PlayableGame playable) {
         return playable.game().board().getHexes().stream()
             .filter(hex -> hex.getTerrain() != TerrainType.DESERT)
@@ -595,6 +733,16 @@ class PlayableGameTest {
         inventory.add(ResourceType.BRICK, 1);
         inventory.add(ResourceType.WOOL, 1);
         inventory.add(ResourceType.GRAIN, 1);
+    }
+
+    private static void giveCityCost(ResourceInventory inventory) {
+        inventory.add(ResourceType.ORE, 3);
+        inventory.add(ResourceType.GRAIN, 2);
+    }
+
+    private static void giveRoadCost(ResourceInventory inventory) {
+        inventory.add(ResourceType.LUMBER, 1);
+        inventory.add(ResourceType.BRICK, 1);
     }
 
     private static void giveDevelopmentCardBudget(ResourceInventory inventory) {

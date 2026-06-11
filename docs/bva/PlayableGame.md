@@ -2,13 +2,17 @@
 
 `PlayableGame` wraps a completed setup `Game` and adds the playable slice we
 implemented: starting hex ownership, dice production, building settlements,
-buying/playing development cards, Largest Army, and reaching 10 victory points.
-This is a simplified CATAN model (hex ownership, not full roads/ports/trading).
+city upgrades, simplified road counts, Longest Road, buying/playing
+development cards, Largest Army, and reaching 10 victory points. This is a
+simplified CATAN model (hex ownership, simplified roads, not full
+roads/ports/trading).
 
 Boundary inputs:
 - `Game`: null, valid setup game.
 - Dice faces: below 1, 1, 6, above 6.
 - Settlement position: below 0, 0, 18, above 18, desert, occupied, unoccupied.
+- City position: owned settlement, unowned position, already-upgraded city.
+- Road count: below 5, exactly 5, tied with holder, exceeding holder.
 - Resource payment: missing one required resource, exactly enough resources.
 
 ## Method under test: `start(Game game)`
@@ -42,6 +46,12 @@ Boundary inputs:
     - **State**: dice sum does not match any owned hex token.
     - **Expected output**: no inventory changes and return value is 0.
 
+- **TC39: City production grants two resources** ( :white_check_mark: )
+    - **State**: current player upgrades an owned settlement to a city and rolls
+      that hex's production token.
+    - **Expected output**: player's inventory for that terrain resource
+      increases by 2 and return value is 2.
+
 ## Method under test: `buildSettlement(int position)`
 
 - **TC7: Building on occupied hex rejected** ( :white_check_mark: )
@@ -59,6 +69,48 @@ Boundary inputs:
       1 grain, and chooses an unoccupied non-desert position.
     - **Expected output**: resources are spent, player owns the position, and
       victory points increase by 1.
+
+## Method under test: `buildCity(int position)` / `isCity(int position)`
+
+- **TC39: City upgrade with exact resources succeeds** ( :white_check_mark: )
+    - **State**: current player owns a settlement and has exactly 3 ore and
+      2 grain.
+    - **Expected output**: resources are spent, `isCity(position)` is true,
+      victory points increase by 1 beyond the settlement point, and future
+      production from that hex is doubled.
+
+- **TC40: Invalid city upgrades rejected** ( :white_check_mark: )
+    - **State**: current player chooses an unowned position, or chooses an
+      owned settlement that has already been upgraded.
+    - **Expected output**: throws `IllegalArgumentException`.
+
+- **TC41: City position boundaries and false state are observable** ( :white_check_mark: )
+    - **State**: position is unowned, below 0, or above 18.
+    - **Expected output**: unowned valid positions report `false`; out-of-range
+      `isCity` and `buildCity` calls throw `IllegalArgumentException`.
+
+- **TC42: City and road actions after win rejected** ( :white_check_mark: )
+    - **State**: a player has already reached 10 victory points.
+    - **Expected output**: `buildCity` and `buildRoad` throw
+      `IllegalStateException` before other validation.
+
+## Method under test: `buildRoad()` / `longestRoadHolder()`
+
+- **TC43: Road with exact resources succeeds** ( :white_check_mark: )
+    - **State**: current player has exactly 1 lumber and 1 brick.
+    - **Expected output**: resources are spent and road count increases by 1.
+
+- **TC44: Longest Road awarded at exactly five roads once** ( :white_check_mark: )
+    - **State**: current player has 4 roads, builds one paid road, then later
+      adds more roads while already holding Longest Road.
+    - **Expected output**: the 5-road threshold awards Longest Road and its
+      2-point bonus, and later roads for the same holder do not re-award it.
+
+- **TC45: Longest Road transferred only when exceeded** ( :white_check_mark: )
+    - **State**: one player holds Longest Road; a second player later ties and
+      then exceeds that road count.
+    - **Expected output**: first player keeps the bonus on a tie and loses it
+      only when exceeded.
 
 ## Method under test: `endTurn()`
 
