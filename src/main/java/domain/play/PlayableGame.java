@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Minimal playable game controller layered on top of the completed setup
@@ -27,17 +28,22 @@ public final class PlayableGame {
     private static final int MIN_POSITION = 0;
     private static final int MAX_POSITION = 18;
     private static final int WINNING_POINTS = 10;
+    private static final int LONGEST_ROAD_THRESHOLD = 5;
     private static final Map<ResourceType, Integer> SETTLEMENT_COST = settlementCost();
+    private static final Map<ResourceType, Integer> CITY_COST = cityCost();
+    private static final Map<ResourceType, Integer> ROAD_COST = roadCost();
     private static final Map<ResourceType, Integer> DEVELOPMENT_CARD_COST =
         developmentCardCost();
 
     private final Game game;
     private final Map<Player, ResourceInventory> inventories = new HashMap<>();
     private final Map<Integer, Player> settlementOwners = new HashMap<>();
+    private final Map<Integer, Boolean> cityPositions = new HashMap<>();
     private final Map<Player, Integer> victoryPoints = new HashMap<>();
     private final Map<Player, Integer> knightsPlayed = new HashMap<>();
     private final Map<Player, Integer> roadCounts = new HashMap<>();
     private Player largestArmyHolder;
+    private Player longestRoadHolder;
 
     private PlayableGame(Game game) {
         this.game = game;
@@ -82,8 +88,9 @@ public final class PlayableGame {
             if (producesOn(hex, total) && settlementOwners.containsKey(hex.getPosition())) {
                 Player owner = settlementOwners.get(hex.getPosition());
                 ResourceType resource = ResourceType.fromTerrain(hex.getTerrain()).get();
-                inventories.get(owner).add(resource, 1);
-                produced++;
+                int amount = cityPositions.getOrDefault(hex.getPosition(), false) ? 2 : 1;
+                inventories.get(owner).add(resource, amount);
+                produced += amount;
             }
         }
         return produced;
@@ -109,6 +116,40 @@ public final class PlayableGame {
         inventories.get(player).spend(SETTLEMENT_COST);
         settlementOwners.put(position, player);
         victoryPoints.put(player, victoryPoints.get(player) + 1);
+    }
+
+    /**
+     * Upgrades the current player's settlement at {@code position} to a city.
+     *
+     * @param position board position in [0, 18]
+     * @throws IllegalArgumentException if the position is not owned by the current
+     *                                  player or is already a city
+     * @throws IllegalStateException    if the current player cannot pay the city cost
+     */
+    public void buildCity(int position) {
+        rejectIfGameOver();
+        Player player = currentPlayer();
+        if (!Optional.of(player).equals(ownerOf(position))) {
+            throw new IllegalArgumentException("current player must own the settlement");
+        }
+        if (cityPositions.getOrDefault(position, false)) {
+            throw new IllegalArgumentException("settlement is already a city");
+        }
+        inventories.get(player).spend(CITY_COST);
+        cityPositions.put(position, true);
+        addVictoryPoints(player, 1);
+    }
+
+    /**
+     * Builds one simplified road for the current player and updates Longest Road.
+     *
+     * @throws IllegalStateException if the current player cannot pay the road cost
+     */
+    public void buildRoad() {
+        rejectIfGameOver();
+        Player player = currentPlayer();
+        inventories.get(player).spend(ROAD_COST);
+        addRoads(player, 1);
     }
 
     /**
@@ -171,26 +212,20 @@ public final class PlayableGame {
             ResourceType plentyFirst,
             ResourceType plentySecond) {
         Objects.requireNonNull(card, "card must not be null");
-        // CHECKSTYLE.SUPPRESS: MissingSwitchDefault
-        switch (card.getType()) {
-            case KNIGHT:
-                applyKnight();
-                break;
-            case VICTORY_POINT:
-                addVictoryPoints(currentPlayer(), 1);
-                break;
-            case ROAD_BUILDING:
-                addRoads(currentPlayer(), 2);
-                break;
-            case MONOPOLY:
-                applyMonopoly(Objects.requireNonNull(
-                    monopolyChoice, "monopolyChoice must not be null"));
-                break;
-            case YEAR_OF_PLENTY:
-                applyYearOfPlenty(
-                    Objects.requireNonNull(plentyFirst, "plentyFirst must not be null"),
-                    Objects.requireNonNull(plentySecond, "plentySecond must not be null"));
-                break;
+        DevelopmentCardType type = card.getType();
+        if (type == DevelopmentCardType.KNIGHT) {
+            applyKnight();
+        } else if (type == DevelopmentCardType.VICTORY_POINT) {
+            addVictoryPoints(currentPlayer(), 1);
+        } else if (type == DevelopmentCardType.ROAD_BUILDING) {
+            addRoads(currentPlayer(), 2);
+        } else if (type == DevelopmentCardType.MONOPOLY) {
+            applyMonopoly(Objects.requireNonNull(
+                monopolyChoice, "monopolyChoice must not be null"));
+        } else {
+            applyYearOfPlenty(
+                Objects.requireNonNull(plentyFirst, "plentyFirst must not be null"),
+                Objects.requireNonNull(plentySecond, "plentySecond must not be null"));
         }
     }
 
@@ -280,12 +315,32 @@ public final class PlayableGame {
     }
 
     /**
+     * Returns whether the board position is a city.
+     *
+     * @param position board position in [0, 18]
+     * @return true when the owned settlement has been upgraded
+     */
+    public boolean isCity(int position) {
+        validatePosition(position);
+        return cityPositions.getOrDefault(position, false);
+    }
+
+    /**
      * Returns the holder of Largest Army, if any.
      *
      * @return player with Largest Army, or empty before the bonus is awarded
      */
     public Optional<Player> largestArmyHolder() {
         return Optional.ofNullable(largestArmyHolder);
+    }
+
+    /**
+     * Returns the holder of Longest Road, if any.
+     *
+     * @return player with Longest Road, or empty before the bonus is awarded
+     */
+    public Optional<Player> longestRoadHolder() {
+        return Optional.ofNullable(longestRoadHolder);
     }
 
     public int winningPoints() {
@@ -325,25 +380,20 @@ public final class PlayableGame {
     }
 
     private void assignStartingSettlements() {
-        int playerIndex = 0;
-        for (Hex hex : game.board().getHexes()) {
-            if (playerIndex == game.players().size()) {
-                break;
-            }
-            if (hex.getTerrain() == TerrainType.DESERT) {
-                continue;
-            }
+        List<Hex> startingHexes = game.board().getHexes().stream()
+            .filter(hex -> hex.getTerrain() != TerrainType.DESERT)
+            .collect(Collectors.toList());
+        for (int playerIndex = 0; playerIndex < game.players().size(); playerIndex++) {
+            Hex hex = startingHexes.get(playerIndex);
             Player player = game.players().get(playerIndex);
             settlementOwners.put(hex.getPosition(), player);
             addVictoryPoints(player, 1);
-            playerIndex++;
         }
     }
 
     private static boolean producesOn(Hex hex, int total) {
         return !hex.hasRobber()
             && hex.getToken().isPresent()
-            && hex.getTerrain() != TerrainType.DESERT
             && hex.getToken().get().getValue() == total;
     }
 
@@ -406,6 +456,24 @@ public final class PlayableGame {
 
     private void addRoads(Player player, int count) {
         roadCounts.put(player, roadCounts.get(player) + count);
+        updateLongestRoad(player);
+    }
+
+    private void updateLongestRoad(Player candidate) {
+        if (roadCounts.get(candidate) < LONGEST_ROAD_THRESHOLD) {
+            return;
+        }
+        if (longestRoadHolder == null) {
+            longestRoadHolder = candidate;
+            addVictoryPoints(candidate, 2);
+            return;
+        }
+        if (!longestRoadHolder.equals(candidate)
+                && roadCounts.get(candidate) > roadCounts.get(longestRoadHolder)) {
+            addVictoryPoints(longestRoadHolder, -2);
+            longestRoadHolder = candidate;
+            addVictoryPoints(candidate, 2);
+        }
     }
 
     private void applyMonopoly(ResourceType resource) {
@@ -437,6 +505,20 @@ public final class PlayableGame {
         cost.put(ResourceType.BRICK, 1);
         cost.put(ResourceType.WOOL, 1);
         cost.put(ResourceType.GRAIN, 1);
+        return Collections.unmodifiableMap(cost);
+    }
+
+    private static Map<ResourceType, Integer> cityCost() {
+        EnumMap<ResourceType, Integer> cost = new EnumMap<>(ResourceType.class);
+        cost.put(ResourceType.ORE, 3);
+        cost.put(ResourceType.GRAIN, 2);
+        return Collections.unmodifiableMap(cost);
+    }
+
+    private static Map<ResourceType, Integer> roadCost() {
+        EnumMap<ResourceType, Integer> cost = new EnumMap<>(ResourceType.class);
+        cost.put(ResourceType.LUMBER, 1);
+        cost.put(ResourceType.BRICK, 1);
         return Collections.unmodifiableMap(cost);
     }
 

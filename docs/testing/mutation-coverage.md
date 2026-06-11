@@ -26,10 +26,12 @@ Reports: `build/reports/jacoco/`, `build/reports/pitest/`,
 | Metric | Result |
 |--------|--------|
 | Build | passing |
-| PIT mutations killed | 254 / 255 (99%) |
-| Effective score (non-equivalent) | **254 / 254 (100%)** |
+| PIT line coverage | 565 / 566 (99%) |
+| PIT mutations killed | 281 / 282 (99%) |
+| Effective score (non-equivalent) | **281 / 281 (100%)** |
 | Jacoco instruction coverage (filtered) | 100% |
-| Jacoco missed complexity (filtered) | 0 / 230 |
+| Jacoco branch coverage (filtered) | 100% |
+| Jacoco missed complexity (filtered) | 0 / 242 |
 | Integration tests | passing |
 
 ## Equivalent mutant (excluded from effective score)
@@ -46,5 +48,17 @@ course rubric allowance for equivalent mutants.
 
 We added targeted tests tied to BVA rows in `docs/bva/` — mainly around game-over
 guards, sorted hex ownership, die bounds, inventory zero-spend, and
-`LocaleManager` bundle discovery edge cases. See `PlayableGameTest`,
-`ResourceInventoryTest`, and `LocaleManagerTest` for examples.
+city/road scoring boundaries. See `PlayableGameTest`, `ResourceInventoryTest`,
+and `LocaleManagerTest` for examples.
+
+The city and Longest Road tests cover exact city cost, doubled city
+production, invalid city positions, post-win rejection, paid road cost, the
+exact 5-road Longest Road threshold, tie retention, and transfer only when
+another player exceeds the holder.
+
+## Remaining gaps
+
+None for the B/A-rubric mutation and cyclomatic coverage targets: every
+non-equivalent mutant is killed, the one equivalent mutant is documented above,
+and Jacoco reports 0 missed branches and 0 missed complexity for the filtered
+non-GUI/non-enum domain scope.
